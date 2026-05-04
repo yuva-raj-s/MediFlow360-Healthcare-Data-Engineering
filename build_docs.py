@@ -248,178 +248,194 @@ html_template = f"""<!DOCTYPE html>
     <!-- MODE 1: LEARNING JOURNEY (TECHY)           -->
     <!-- ========================================== -->
     <div id="view-learning" class="view-panel active">
-        <!-- Hero Section: Project Pulse -->
-        <section class="py-12 px-6 lg:px-12 border-b border-cyber-500/20">
-            <div class="max-w-[1500px] mx-auto">
-                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-12">
-                    <div>
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-cyber-500/10 border border-cyber-500/30 text-cyber-400 text-[10px] font-mono mb-4 tracking-widest">
-                            <i data-lucide="activity" class="w-3 h-3 animate-pulse"></i> SYSTEM_HEALTH: OPTIMAL
-                        </div>
-                        <h2 class="text-4xl lg:text-6xl font-display font-extrabold text-white tracking-tighter">Command Center <span class="text-cyber-500">v3.0</span></h2>
-                        <p class="text-slate-400 font-mono text-sm mt-2">> Executing MediFlow360 Enterprise Synchronization.</p>
-                    </div>
-                    <div class="flex gap-4">
-                        <div class="glass-card p-4 rounded-xl border-l-4 border-cyber-500 min-w-[160px]">
-                            <div class="text-[10px] text-slate-500 font-mono uppercase">Current Sprint</div>
-                            <div class="text-2xl font-display font-bold text-white">03 <span class="text-xs text-slate-500">/ 12</span></div>
-                        </div>
-                        <div class="glass-card p-4 rounded-xl border-l-4 border-green-500 min-w-[160px]">
-                            <div class="text-[10px] text-slate-500 font-mono uppercase">Pipeline Success</div>
-                            <div class="text-2xl font-display font-bold text-white">99.8%</div>
-                        </div>
-                        <div class="glass-card p-4 rounded-xl border-l-4 border-purple-500 min-w-[160px]">
-                            <div class="text-[10px] text-slate-500 font-mono uppercase">Data Under MGMT</div>
-                            <div class="text-2xl font-display font-bold text-white">4.2 TB</div>
-                        </div>
-                    </div>
+        <!-- Hero Section -->
+        <section class="min-h-[70vh] flex flex-col items-center justify-center px-6 relative border-b border-cyber-500/10">
+            <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full glass-panel border-cyber-500/50 text-cyber-400 text-xs font-mono mb-8 shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+                <i data-lucide="activity" class="w-4 h-4"></i> INITIALIZING PIPELINE...
+            </div>
+            <h2 class="text-5xl md:text-7xl font-display font-extrabold text-white text-center tracking-tight leading-tight max-w-5xl drop-shadow-2xl">
+                Master the Art of <br/>
+                <span class="text-gradient">Enterprise Data Engineering</span>
+            </h2>
+            <p class="mt-6 text-lg font-mono text-slate-400 text-center max-w-3xl leading-relaxed">
+                > TARGET: Healthcare Domain <br/>
+                > PROTOCOL: Medallion Architecture (Bronze/Silver/Gold) <br/>
+                > STATUS: 7 Heterogeneous Sources Synchronized.
+            </p>
+        </section>
+
+        <!-- Techy Interactive Architecture Diagram -->
+        <section id="sec-architecture" class="py-20 px-10 max-w-[1500px] mx-auto overflow-visible">
+            <div class="text-center mb-16">
+                <h3 class="text-4xl font-display font-extrabold text-white mb-4">System Topology</h3>
+                <p class="text-cyber-400 font-mono text-sm uppercase tracking-widest animate-pulse">Click core nodes to access source code.</p>
+            </div>
+
+            <div class="relative glass-panel rounded-3xl p-10 min-h-[650px] border-cyber-500/30 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#00f0ff 1px, transparent 1px), linear-gradient(90deg, #00f0ff 1px, transparent 1px); background-size: 30px 30px;"></div>
+                
+                <svg width="100%" height="100%" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 z-0 overflow-visible">
+                    <!-- Source to ADF -->
+                    <path class="data-pipe" d="M 150 60 C 250 60, 250 300, 400 300" />
+                    <path class="data-pipe" d="M 150 138 C 250 138, 250 300, 400 300" />
+                    <path class="data-pipe" d="M 150 216 C 250 216, 250 300, 400 300" />
+                    <path class="data-pipe" d="M 150 300 L 400 300" />
+                    <path class="data-pipe" d="M 150 384 C 250 384, 250 300, 400 300" />
+                    <path class="data-pipe" d="M 150 462 C 250 462, 250 300, 400 300" />
+                    <path class="data-pipe" d="M 150 540 C 250 540, 250 300, 400 300" />
+
+                    <!-- ADF to Processing -->
+                    <path class="data-pipe" d="M 400 300 L 600 150" />
+                    <path class="data-pipe" d="M 600 150 L 800 150" />
+                    <path class="data-pipe" d="M 800 150 C 700 300, 700 300, 600 300" />
+                    <path class="data-pipe" d="M 600 300 L 800 300" />
+                    <path class="data-pipe" d="M 800 300 C 700 450, 700 450, 600 450" />
+                    <path class="data-pipe" d="M 600 450 L 800 450" />
+
+                    <!-- Serving & Presentation -->
+                    <path class="data-pipe" d="M 800 450 C 950 450, 950 228, 1050 228" />
+                    <path class="data-pipe" d="M 1050 228 L 1050 90" />
+                    <path class="data-pipe" d="M 800 300 C 950 300, 950 372, 1050 372" />
+
+                    <!-- ALERTING PATHS (Centralized Monitoring) -->
+                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 400 300 C 500 550, 900 550, 1050 510" /> <!-- ADF to Logic App -->
+                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 150 C 900 150, 1000 500, 1050 510" /> <!-- Bronze to Logic App -->
+                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 300 C 900 300, 1000 500, 1050 510" /> <!-- Silver to Logic App -->
+                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 450 C 900 450, 1000 500, 1050 510" /> <!-- Gold to Logic App -->
+
+                    <path class="data-flow" d="M 150 60 C 250 60, 250 300, 400 300" />
+                    <path class="data-flow" d="M 150 138 C 250 138, 250 300, 400 300" style="animation-delay: -0.3s;" />
+                    <path class="data-flow" d="M 150 216 C 250 216, 250 300, 400 300" style="animation-delay: -0.6s;" />
+                    <path class="data-flow" d="M 150 300 L 400 300" style="animation-delay: -0.9s;" />
+                    <path class="data-flow" d="M 150 384 C 250 384, 250 300, 400 300" style="animation-delay: -1.2s;" />
+                    <path class="data-flow" d="M 150 462 C 250 462, 250 300, 400 300" style="animation-delay: -1.5s;" />
+                    <path class="data-flow" d="M 150 540 C 250 540, 250 300, 400 300" style="animation-delay: -1.8s;" />
+
+                    <path class="data-flow" d="M 400 300 L 600 150" />
+                    <path class="data-flow" d="M 600 150 L 800 150" />
+                    <path class="data-flow" d="M 800 150 C 700 300, 700 300, 600 300" />
+                    <path class="data-flow" d="M 600 300 L 800 300" />
+                    <path class="data-flow" d="M 800 300 C 700 450, 700 450, 600 450" />
+                    <path class="data-flow" d="M 600 450 L 800 450" />
+                    <path class="data-flow" d="M 800 450 C 950 450, 950 228, 1050 228" />
+                    <path class="data-flow" d="M 1050 228 L 1050 90" />
+                    <path class="data-flow" d="M 800 300 C 950 300, 950 372, 1050 372" />
+                    <path class="data-flow-alert" d="M 400 300 C 500 550, 900 550, 1050 510" /> 
+                    <path class="data-flow-alert" d="M 800 150 C 900 150, 1000 500, 1050 510" style="animation-delay: -0.5s;" />
+                    <path class="data-flow-alert" d="M 800 300 C 900 300, 1000 500, 1050 510" style="animation-delay: -1s;" />
+                </svg>
+
+                <div class="tech-node" style="left: 12.5%; top: 10%; padding: 8px; width: 140px;" onclick="openDoc('03_data_dictionary', 'Source_to_Bronze_Mapping.md')">
+                    <i data-lucide="database" class="w-4 h-4 text-cyber-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="font-size: 11px;">S1: MYSQL</div><div class="tech-node-desc" style="font-size: 9px;">SHIR Connected</div>
+                </div>
+                <div class="tech-node" style="left: 12.5%; top: 23%; padding: 8px; width: 140px;" onclick="openDoc('15_incidents_and_struggles', 'INC-007_REST_API_OAuth2_Token_Change.md')">
+                    <i data-lucide="globe" class="w-4 h-4 text-cyber-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="font-size: 11px;">S2: REST API</div><div class="tech-node-desc" style="font-size: 9px;">OAuth2 Paged</div>
+                </div>
+                <div class="tech-node" style="left: 12.5%; top: 36%; padding: 8px; width: 140px;" onclick="openDoc('15_incidents_and_struggles', 'INC-008_BOM_in_CSV.md')">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4 text-cyber-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="font-size: 11px;">S3: SFTP</div><div class="tech-node-desc" style="font-size: 9px;">Blob Event</div>
+                </div>
+                <div class="tech-node" style="left: 12.5%; top: 50%; padding: 8px; width: 140px;" onclick="openDoc('03_data_dictionary', 'Source_to_Bronze_Mapping.md')">
+                    <i data-lucide="server" class="w-4 h-4 text-cyber-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="font-size: 11px;">S4: COSMOSDB</div><div class="tech-node-desc" style="font-size: 9px;">JSON Docs</div>
+                </div>
+                <div class="tech-node" style="left: 12.5%; top: 64%; padding: 8px; width: 140px;" onclick="openDoc('03_data_dictionary', 'Source_to_Bronze_Mapping.md')">
+                    <i data-lucide="database" class="w-4 h-4 text-cyber-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="font-size: 11px;">S5: POSTGRES</div><div class="tech-node-desc" style="font-size: 9px;">Logical CDC</div>
+                </div>
+                <div class="tech-node" style="left: 12.5%; top: 77%; padding: 8px; width: 140px;" onclick="openDoc('03_data_dictionary', 'Source_to_Bronze_Mapping.md')">
+                    <i data-lucide="file-text" class="w-4 h-4 text-cyber-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="font-size: 11px;">S6: SHAREPOINT</div><div class="tech-node-desc" style="font-size: 9px;">Excel Roster</div>
+                </div>
+                <div class="tech-node" style="left: 12.5%; top: 90%; padding: 8px; width: 140px;" onclick="openDoc('03_data_dictionary', 'Source_to_Bronze_Mapping.md')">
+                    <i data-lucide="activity" class="w-4 h-4 text-cyber-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="font-size: 11px;">S7: IOT HUB</div><div class="tech-node-desc" style="font-size: 9px;">Vitals Stream</div>
                 </div>
 
-                <!-- Dashboard Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    
-                    <!-- Left: Architecture Explorer -->
-                    <div class="lg:col-span-8 space-y-8">
-                        <div class="glass-panel p-8 rounded-3xl border border-cyber-500/20 relative overflow-hidden group">
-                            <div class="flex justify-between items-center mb-8">
-                                <h4 class="text-xl font-display font-bold text-white flex items-center gap-2">
-                                    <i data-lucide="layers" class="w-5 h-5 text-cyber-500"></i> System Topology Explorer
-                                </h4>
-                                <span class="text-[10px] font-mono text-cyber-500/50">INTERACTIVE_MAP_v2</span>
-                            </div>
-                            
-                            <!-- High Fidelity SVG Diagram (Refined) -->
-                            <div class="relative min-h-[400px] w-full flex items-center justify-center">
-                                <svg width="100%" height="300" viewBox="0 0 800 300" class="overflow-visible">
-                                    <!-- Flow Lines -->
-                                    <path d="M 50 150 L 250 150" class="data-pipe" stroke-width="4" stroke="rgba(0,240,255,0.1)" />
-                                    <path d="M 250 150 L 450 150" class="data-pipe" stroke-width="4" stroke="rgba(139,92,246,0.1)" />
-                                    <path d="M 450 150 L 650 150" class="data-pipe" stroke-width="4" stroke="rgba(251,191,36,0.1)" />
-                                    
-                                    <!-- Anim Flow -->
-                                    <path d="M 50 150 L 250 150" class="data-flow" stroke-dasharray="10,20" />
-                                    <path d="M 250 150 L 450 150" class="data-flow" style="stroke:#8b5cf6; animation-delay:-1s" />
-                                    <path d="M 450 150 L 650 150" class="data-flow" style="stroke:#fbbf24; animation-delay:-2s" />
+                <div class="radar-pulse" style="left: 33.3%; top: 50%;"></div>
+                <div class="tech-node" style="left: 33.3%; top: 50%; border-color: #8b5cf6;" onclick="openDoc('09_adf_pipelines/pipeline_configs', 'PL_Master_Orchestrator.json')">
+                    <i data-lucide="git-commit" class="w-8 h-8 text-purple-400 mx-auto mb-2"></i>
+                    <div class="tech-node-title" style="color: #a78bfa;">AZURE ADF</div><div class="tech-node-desc">Orchestrator Core</div>
+                </div>
 
-                                    <!-- Nodes -->
-                                    <circle cx="50" cy="150" r="30" fill="#0b1120" stroke="#00f0ff" stroke-width="2" />
-                                    <text x="50" y="200" fill="#fff" font-size="10" text-anchor="middle" font-family="monospace">SOURCES</text>
-                                    
-                                    <circle cx="250" cy="150" r="40" fill="#0b1120" stroke="#8b5cf6" stroke-width="2" />
-                                    <text x="250" y="210" fill="#fff" font-size="10" text-anchor="middle" font-family="monospace">BRONZE (RAW)</text>
-                                    
-                                    <circle cx="450" cy="150" r="45" fill="#0b1120" stroke="#ec4899" stroke-width="2" />
-                                    <text x="450" y="215" fill="#fff" font-size="10" text-anchor="middle" font-family="monospace">SILVER (SCD2)</text>
-                                    
-                                    <circle cx="650" cy="150" r="30" fill="#0b1120" stroke="#fbbf24" stroke-width="2" />
-                                    <text x="650" y="200" fill="#fff" font-size="10" text-anchor="middle" font-family="monospace">GOLD (KPIs)</text>
-                                </svg>
-                            </div>
+                <div class="tech-node" style="left: 50%; top: 25%; border-color: #d97706;" onclick="openDoc('08_sql_scripts/ddl', '01_create_bronze_tables.sql')">
+                    <i data-lucide="hard-drive" class="w-5 h-5 text-amber-500 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="color:#fbbf24;">UC: BRONZE</div><div class="tech-node-desc">Raw ABFSS</div>
+                </div>
+                <div class="tech-node" style="left: 50%; top: 50%; border-color: #94a3b8;" onclick="openDoc('03_data_dictionary', 'SCD_Design_Document.md')">
+                    <i data-lucide="hard-drive" class="w-5 h-5 text-slate-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="color:#cbd5e1;">UC: SILVER</div><div class="tech-node-desc">Delta Tables</div>
+                </div>
+                <div class="tech-node" style="left: 50%; top: 75%; border-color: #fbbf24;" onclick="openDoc('08_sql_scripts/ddl', '03_create_gold_tables.sql')">
+                    <i data-lucide="hard-drive" class="w-5 h-5 text-yellow-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="color:#fde047;">UC: GOLD</div><div class="tech-node-desc">Delta Tables</div>
+                </div>
 
-                            <div class="grid grid-cols-3 gap-6 mt-8">
-                                <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                                    <div class="text-[10px] text-cyber-500 font-mono mb-1">INJECTION</div>
-                                    <p class="text-xs text-slate-400">7 Heterogeneous sources via SHIR & REST.</p>
-                                </div>
-                                <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                                    <div class="text-[10px] text-purple-500 font-mono mb-1">TRANSFORM</div>
-                                    <p class="text-xs text-slate-400">PII Masking & SCD-2 logic applied in Silver.</p>
-                                </div>
-                                <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                                    <div class="text-[10px] text-amber-500 font-mono mb-1">SERVING</div>
-                                    <p class="text-xs text-slate-400">Aggregated views for Power BI Analytics.</p>
-                                </div>
-                            </div>
-                        </div>
+                <div class="radar-pulse" style="left: 66.6%; top: 50%; border-color: rgba(255, 0, 60, 0.5);"></div>
+                <div class="tech-node" style="left: 66.6%; top: 25%; border-color: #3b82f6;" onclick="openDoc('07_notebooks', '01_Bronze_Ingestion_NB.py')">
+                    <i data-lucide="terminal" class="w-5 h-5 text-blue-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="color:#60a5fa;">DBX: BRONZE</div><div class="tech-node-desc">PII Mask & Hash</div>
+                </div>
+                <div class="tech-node" style="left: 66.6%; top: 50%; border-color: #3b82f6;" onclick="openDoc('07_notebooks', '02b_Silver_SCD2_NB.py')">
+                    <i data-lucide="terminal" class="w-5 h-5 text-blue-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="color:#60a5fa;">DBX: SILVER</div><div class="tech-node-desc">SCD Type 1/2 MERGE</div>
+                </div>
+                <div class="tech-node" style="left: 66.6%; top: 75%; border-color: #3b82f6;" onclick="openDoc('07_notebooks', '03_Gold_Aggregation_NB.py')">
+                    <i data-lucide="terminal" class="w-5 h-5 text-blue-400 mx-auto mb-1"></i>
+                    <div class="tech-node-title" style="color:#60a5fa;">DBX: GOLD</div><div class="tech-node-desc">Fact Aggregation</div>
+                </div>
 
-                        <!-- Governance & Compliance section -->
-                        <div class="glass-panel p-8 rounded-3xl border border-cyber-500/20">
-                            <h4 class="text-xl font-display font-bold text-white mb-6 flex items-center gap-2">
-                                <i data-lucide="shield-check" class="w-5 h-5 text-green-500"></i> Governance & Privacy Pulse
-                            </h4>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center p-3 bg-slate-900/40 border border-slate-800 rounded-lg">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                                        <span class="text-xs font-mono text-slate-300">PII Masking Engine Status</span>
-                                    </div>
-                                    <span class="text-[10px] font-mono text-green-400">ACTIVE: HASHING Aadhaar/MRN</span>
-                                </div>
-                                <div class="flex justify-between items-center p-3 bg-slate-900/40 border border-slate-800 rounded-lg">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                                        <span class="text-xs font-mono text-slate-300">Data Quality Gating (Gold)</span>
-                                    </div>
-                                    <span class="text-[10px] font-mono text-green-400">BLOCKING ON SCHEMA_DRIFT</span>
-                                </div>
-                                <div class="flex justify-between items-center p-3 bg-slate-900/40 border border-slate-800 rounded-lg">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
-                                        <span class="text-xs font-mono text-slate-300">Unity Catalog RBAC Sync</span>
-                                    </div>
-                                    <span class="text-[10px] font-mono text-yellow-400">92% SYNCED</span>
-                                </div>
-                            </div>
-                        </div>
+                <div class="tech-node" style="left: 87.5%; top: 15%; border-color: #eab308;" onclick="openDoc('19_power_bi', 'Dashboard_Specs.md')">
+                    <i data-lucide="pie-chart" class="w-6 h-6 text-yellow-400 mx-auto mb-2"></i>
+                    <div class="tech-node-title" style="color:#fde047;">POWER BI</div><div class="tech-node-desc">Exec Dashboards</div>
+                </div>
+                <div class="tech-node" style="left: 87.5%; top: 38%; border-color: #06b6d4;" onclick="openDoc('11_infrastructure', 'Synapse_Deployment.md')">
+                    <i data-lucide="network" class="w-6 h-6 text-cyan-400 mx-auto mb-2"></i>
+                    <div class="tech-node-title" style="color:#67e8f9;">AZURE SYNAPSE</div><div class="tech-node-desc">Dedicated SQL Pool</div>
+                </div>
+                <div class="tech-node" style="left: 87.5%; top: 62%; border-color: #8b5cf6;" onclick="openDoc('08_sql_scripts/ddl', '03_create_gold_tables.sql')">
+                    <i data-lucide="server" class="w-6 h-6 text-purple-400 mx-auto mb-2"></i>
+                    <div class="tech-node-title" style="color:#a78bfa;">AZURE SQL</div><div class="tech-node-desc">Audit & Config</div>
+                </div>
+                <div class="tech-node" style="left: 87.5%; top: 85%; border-color: #ff003c; box-shadow: 0 0 20px rgba(255,0,60,0.5);" onclick="openDoc('07_notebooks', '05_Data_Quality_NB.py')">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-red-500 mx-auto mb-2"></i>
+                    <div class="tech-node-title" style="color:#fca5a5;">LOGIC APP</div><div class="tech-node-desc">Centralized Alerting</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Carousel -->
+        <section class="py-24 px-6 lg:px-12 border-t border-cyber-500/20 bg-slate-900/50">
+            <div class="max-w-[1400px] mx-auto">
+                <h3 class="text-3xl font-display font-bold text-white mb-2">Training Modules</h3>
+                <p class="text-cyber-400 font-mono text-sm mb-10">> INITIATING DATA ENGINEERING CURRICULUM</p>
+                
+                <div class="flex overflow-x-auto gap-8 pb-8 hide-scroll snap-x">
+                    <div class="glass-card min-w-[340px] max-w-[340px] p-8 rounded-2xl shrink-0 snap-start flex flex-col relative overflow-hidden group">
+                        <div class="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center mb-6 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]"><i data-lucide="file-code-2" class="w-7 h-7"></i></div>
+                        <h4 class="text-xl font-bold text-white mb-3 font-display">1. The Mandate</h4>
+                        <p class="text-slate-400 text-sm mb-6 flex-1 font-mono leading-relaxed">Extract from BRD: CIO requires zero-budget architecture. Analyze Free Tier constraints and data mapping.</p>
+                        <button onclick="openDoc('01_business_requirements', 'BRD_MediFlow360_v2.0.md')" class="w-full py-3 bg-slate-800 text-white rounded-lg text-sm font-mono font-bold transition-all border border-slate-700 hover:border-blue-500 hover:text-blue-400">EXECUTE -> BRD.md</button>
                     </div>
 
-                    <!-- Right: Project Stats & Recent Incidents -->
-                    <div class="lg:col-span-4 space-y-8">
-                        <div class="glass-panel p-6 rounded-3xl border border-cyber-500/20 h-full">
-                            <h4 class="text-lg font-display font-bold text-white mb-6 flex items-center gap-2">
-                                <i data-lucide="clipboard-list" class="w-5 h-5 text-cyber-500"></i> Project Specs (BRD Summary)
-                            </h4>
-                            <div class="space-y-6">
-                                <div>
-                                    <div class="flex justify-between text-[10px] font-mono text-slate-500 mb-2">
-                                        <span>RESOURCE GROUP</span>
-                                        <span>rg-mediflow360</span>
-                                    </div>
-                                    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                                        <div class="bg-cyber-500 h-full w-[100%]"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-[10px] font-mono text-slate-500 mb-2">
-                                        <span>DATA STORAGE (ADLS)</span>
-                                        <span>mrhsadlsprod</span>
-                                    </div>
-                                    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                                        <div class="bg-purple-500 h-full w-[85%]"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-[10px] font-mono text-slate-500 mb-2">
-                                        <span>SYNAPSE SERVING</span>
-                                        <span>mrhs-synw-prod</span>
-                                    </div>
-                                    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                                        <div class="bg-amber-500 h-full w-[60%]"></div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="glass-card min-w-[340px] max-w-[340px] p-8 rounded-2xl shrink-0 snap-start flex flex-col relative overflow-hidden group">
+                        <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center mb-6 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.3)]"><i data-lucide="shield-check" class="w-7 h-7"></i></div>
+                        <h4 class="text-xl font-bold text-white mb-3 font-display">2. Governance</h4>
+                        <p class="text-slate-400 text-sm mb-6 flex-1 font-mono leading-relaxed">Enforce DPDP Act compliance. Review Python SHA-256 hashing and PII regex masking algorithms.</p>
+                        <button onclick="openDoc('05_data_governance', 'DPDP_Compliance_Checklist.md')" class="w-full py-3 bg-slate-800 text-white rounded-lg text-sm font-mono font-bold transition-all border border-slate-700 hover:border-emerald-500 hover:text-emerald-400">EXECUTE -> DPDP.md</button>
+                    </div>
 
-                            <div class="mt-12">
-                                <h5 class="text-xs font-mono text-cyber-500 uppercase mb-4 tracking-widest">Recent Incident Logs</h5>
-                                <div class="space-y-4">
-                                    <div class="p-3 bg-red-500/5 border-l-2 border-red-500 rounded text-left cursor-pointer hover:bg-red-500/10 transition-colors" onclick="openDoc('15_incidents_and_struggles', 'INC-007_REST_API_OAuth2_Token_Change.md')">
-                                        <div class="text-[9px] text-red-400 font-mono mb-1">INC-007 // CRITICAL</div>
-                                        <p class="text-[11px] text-slate-300 font-bold">OAuth2 Token Lifecycle Change</p>
-                                        <p class="text-[9px] text-slate-500 mt-1">REST API source changed auth scope without notice. Pipeline patched.</p>
-                                    </div>
-                                    <div class="p-3 bg-orange-500/5 border-l-2 border-orange-500 rounded text-left cursor-pointer hover:bg-orange-500/10 transition-colors" onclick="openDoc('15_incidents_and_struggles', 'INC-005_SCD2_Broke_Incremental.md')">
-                                        <div class="text-[9px] text-orange-400 font-mono mb-1">INC-005 // RESOLVED</div>
-                                        <p class="text-[11px] text-slate-300 font-bold">SCD-2 Logic Loop Failure</p>
-                                        <p class="text-[9px] text-slate-500 mt-1">Found duplicate MRN keys in patient delta. Cleaned via rank().</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="glass-card min-w-[340px] max-w-[340px] p-8 rounded-2xl shrink-0 snap-start flex flex-col relative overflow-hidden group border-red-500/30 shadow-[0_0_20px_rgba(255,0,60,0.1)]">
+                        <div class="w-14 h-14 bg-red-500/20 text-red-500 rounded-xl flex items-center justify-center mb-6 border border-red-500/50 animate-pulse"><i data-lucide="flame" class="w-7 h-7"></i></div>
+                        <h4 class="text-xl font-bold text-red-400 mb-3 font-display">3. The War Room</h4>
+                        <p class="text-slate-400 text-sm mb-6 flex-1 font-mono leading-relaxed">! CRITICAL FAILURES. Review Incident Reports for broken SCD loops, silent API changes, and missing BOMs.</p>
+                        <button onclick="openDoc('15_incidents_and_struggles', 'INC-005_SCD2_Broke_Incremental.md')" class="w-full py-3 bg-red-900/40 text-red-300 rounded-lg text-sm font-mono font-bold transition-all border border-red-500/50 hover:bg-red-500/40 hover:text-white">DEBUG -> INC-005.md</button>
                     </div>
                 </div>
             </div>
         </section>
-    </div>
     </div>
 
     <!-- ========================================== -->

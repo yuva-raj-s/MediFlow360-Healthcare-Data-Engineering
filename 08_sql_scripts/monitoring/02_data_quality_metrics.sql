@@ -1,0 +1,1 @@
+SELECT * FROM gold.fraud_flags WHERE flag_date = GETDATE();

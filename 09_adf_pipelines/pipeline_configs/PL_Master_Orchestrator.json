@@ -1,0 +1,158 @@
+{
+  "name": "PL_Master_Orchestrator",
+  "properties": {
+    "description": "MediFlow360 Master Orchestration Pipeline. Runs daily at 01:00 AM IST. Triggers all source ingestion pipelines sequentially, then Silver and Gold transforms. Sends alert on any failure.",
+    "activities": [
+      {
+        "name": "Get_Watermark_Patients",
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderStoredProcedureName": "[bronze_meta].[sp_get_watermark]",
+            "storedProcedureParameters": {
+              "entity_name": { "value": "s1_patients", "type": "String" }
+            }
+          },
+          "dataset": { "referenceName": "DS_AzureSQL_Watermark", "type": "DatasetReference" }
+        }
+      },
+      {
+        "name": "PL_Ingest_S1_Patients",
+        "type": "ExecutePipeline",
+        "dependsOn": [{ "activity": "Get_Watermark_Patients", "dependencyConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "pipeline": { "referenceName": "PL_Ingest_Patients", "type": "PipelineReference" },
+          "parameters": {
+            "watermark_value": { "value": "@activity('Get_Watermark_Patients').output.firstRow.last_watermark_value" },
+            "pipeline_run_id": { "value": "@pipeline().RunId" }
+          },
+          "waitOnCompletion": true
+        }
+      },
+      {
+        "name": "PL_Ingest_S2_Claims",
+        "type": "ExecutePipeline",
+        "dependsOn": [{ "activity": "Get_Watermark_Patients", "dependencyConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "pipeline": { "referenceName": "PL_Ingest_Claims", "type": "PipelineReference" },
+          "parameters": { "pipeline_run_id": { "value": "@pipeline().RunId" } },
+          "waitOnCompletion": true
+        }
+      },
+      {
+        "name": "PL_Ingest_S4_Appointments",
+        "type": "ExecutePipeline",
+        "dependsOn": [{ "activity": "Get_Watermark_Patients", "dependencyConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "pipeline": { "referenceName": "PL_Ingest_Appointments", "type": "PipelineReference" },
+          "parameters": { "pipeline_run_id": { "value": "@pipeline().RunId" } },
+          "waitOnCompletion": true
+        }
+      },
+      {
+        "name": "PL_Ingest_S5_Pharmacy",
+        "type": "ExecutePipeline",
+        "dependsOn": [{ "activity": "Get_Watermark_Patients", "dependencyConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "pipeline": { "referenceName": "PL_Ingest_Pharmacy", "type": "PipelineReference" },
+          "parameters": { "pipeline_run_id": { "value": "@pipeline().RunId" } },
+          "waitOnCompletion": true
+        }
+      },
+      {
+        "name": "Check_Ingestion_Success",
+        "type": "IfCondition",
+        "dependsOn": [
+          { "activity": "PL_Ingest_S1_Patients", "dependencyConditions": ["Completed"] },
+          { "activity": "PL_Ingest_S2_Claims", "dependencyConditions": ["Completed"] },
+          { "activity": "PL_Ingest_S4_Appointments", "dependencyConditions": ["Completed"] },
+          { "activity": "PL_Ingest_S5_Pharmacy", "dependencyConditions": ["Completed"] }
+        ],
+        "typeProperties": {
+          "expression": {
+            "value": "@and(equals(activity('PL_Ingest_S1_Patients').Status,'Succeeded'), equals(activity('PL_Ingest_S2_Claims').Status,'Succeeded'))",
+            "type": "Expression"
+          },
+          "ifTrueActivities": [
+            {
+              "name": "Run_Silver_Transform",
+              "type": "DatabricksNotebook",
+              "typeProperties": {
+                "notebookPath": "/MediFlow360/02_Silver_Transform_NB",
+                "baseParameters": {
+                  "pipeline_run_id": { "value": "@pipeline().RunId" }
+                }
+              },
+              "linkedServiceName": { "referenceName": "LS_Databricks", "type": "LinkedServiceReference" }
+            }
+          ],
+          "ifFalseActivities": [
+            {
+              "name": "Send_Ingestion_Failure_Alert",
+              "type": "WebActivity",
+              "typeProperties": {
+                "url": { "value": "@activity('Get_Watermark_Patients').output", "type": "Expression" },
+                "method": "POST",
+                "body": {
+                  "text": "⚠️ MediFlow360: One or more ingestion pipelines FAILED. Silver transform skipped. Run ID: @{pipeline().RunId}"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "Run_Silver_SCD2",
+        "type": "DatabricksNotebook",
+        "dependsOn": [{ "activity": "Check_Ingestion_Success", "dependencyConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "notebookPath": "/MediFlow360/02b_Silver_SCD2_NB",
+          "baseParameters": { "pipeline_run_id": { "value": "@pipeline().RunId" } }
+        },
+        "linkedServiceName": { "referenceName": "LS_Databricks", "type": "LinkedServiceReference" }
+      },
+      {
+        "name": "Run_Gold_Aggregation",
+        "type": "DatabricksNotebook",
+        "dependsOn": [{ "activity": "Run_Silver_SCD2", "dependencyConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "notebookPath": "/MediFlow360/03_Gold_Aggregation_NB",
+          "baseParameters": { "pipeline_run_id": { "value": "@pipeline().RunId" } }
+        },
+        "linkedServiceName": { "referenceName": "LS_Databricks", "type": "LinkedServiceReference" }
+      },
+      {
+        "name": "Run_Anomaly_Detection",
+        "type": "DatabricksNotebook",
+        "dependsOn": [{ "activity": "Run_Gold_Aggregation", "dependencyConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "notebookPath": "/MediFlow360/04_Anomaly_Detection_NB",
+          "baseParameters": { "pipeline_run_id": { "value": "@pipeline().RunId" } }
+        },
+        "linkedServiceName": { "referenceName": "LS_Databricks", "type": "LinkedServiceReference" }
+      },
+      {
+        "name": "Update_Watermark_Patients",
+        "type": "SqlServerStoredProcedure",
+        "dependsOn": [{ "activity": "Run_Gold_Aggregation", "dependencyConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "storedProcedureName": "[bronze_meta].[sp_update_watermark]",
+          "storedProcedureParameters": {
+            "entity_name": { "value": "s1_patients", "type": "String" },
+            "new_watermark": { "value": "@utcNow()", "type": "String" },
+            "pipeline_run_id": { "value": "@pipeline().RunId", "type": "String" },
+            "records_processed": { "value": "0", "type": "Int64" },
+            "load_status": { "value": "SUCCESS", "type": "String" }
+          }
+        },
+        "linkedServiceName": { "referenceName": "LS_AzureSQL_Serving", "type": "LinkedServiceReference" }
+      }
+    ],
+    "parameters": {
+      "pipeline_run_id": { "type": "string", "defaultValue": "AUTO" }
+    },
+    "annotations": ["MediFlow360", "Orchestrator", "v2.1"],
+    "lastPublishTime": "2024-03-10T00:00:00Z"
+  }
+}

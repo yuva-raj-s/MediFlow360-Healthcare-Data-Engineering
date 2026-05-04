@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "totalRecords": 5,
+    "page": 1,
+    "pageSize": 500,
+    "nextPageUrl": null,
+    "generatedAt": "2024-01-15T00:30:00Z",
+    "apiVersion": "v2"
+  },
+  "data": [
+    {
+      "claimId": "CLM-2024-00501",
+      "patientMRN": "MRN-HIS-CHN-1001",
+      "hospitalCode": "MRHS-CHN",
+      "procedureCode": "99213",
+      "diagnosisCode": "J06.9",
+      "claimDate": "2024-01-10",
+      "claimAmount": 4500.00,
+      "status": "SUBMITTED",
+      "payerCode": "ICICI-GOLD-001",
+      "attendingPhysicianId": "PHYS-001",
+      "submissionTimestamp": "2024-01-10T14:30:00Z",
+      "lastUpdated": "2024-01-10T14:30:00Z"
+    },
+    {
+      "claimId": "CLM-2024-00502",
+      "patientMRN": "MRN-HIS-CHN-1003",
+      "hospitalCode": "MRHS-CBE",
+      "procedureCode": "93000",
+      "diagnosisCode": "I10",
+      "claimDate": "2024-01-08",
+      "claimAmount": 187500.00,
+      "status": "IN_REVIEW",
+      "payerCode": "UNITED-BASIC-003",
+      "attendingPhysicianId": "PHYS-007",
+      "submissionTimestamp": "2024-01-08T09:00:00Z",
+      "lastUpdated": "2024-01-12T11:00:00Z"
+    },
+    {
+      "claimId": "CLM-2024-00489",
+      "patientMRN": "MRN-HIS-CHN-1007",
+      "hospitalCode": "MRHS-MDU",
+      "procedureCode": "99213",
+      "diagnosisCode": "E11.9",
+      "claimDate": "2024-01-08",
+      "claimAmount": 4500.00,
+      "status": "DENIED",
+      "payerCode": "NONE",
+      "attendingPhysicianId": "PHYS-012",
+      "submissionTimestamp": "2024-01-08T10:15:00Z",
+      "lastUpdated": "2024-01-14T16:00:00Z"
+    },
+    {
+      "claimId": "CLM-2024-00490",
+      "patientMRN": "MRN-HIS-CHN-1007",
+      "hospitalCode": "MRHS-MDU",
+      "procedureCode": "99213",
+      "diagnosisCode": "E11.9",
+      "claimDate": "2024-01-10",
+      "claimAmount": 4500.00,
+      "status": "SUBMITTED",
+      "payerCode": "NONE",
+      "attendingPhysicianId": "PHYS-012",
+      "submissionTimestamp": "2024-01-10T10:15:00Z",
+      "lastUpdated": "2024-01-10T10:15:00Z"
+    },
+    {
+      "claimId": "CLM-2024-00503",
+      "patientMRN": "MRN-HIS-CHN-1022",
+      "hospitalCode": "MRHS-CHN",
+      "procedureCode": "27447",
+      "diagnosisCode": "M17.11",
+      "claimDate": "2024-01-12",
+      "claimAmount": 245000.00,
+      "status": "APPROVED",
+      "payerCode": "ICICI-GOLD-001",
+      "attendingPhysicianId": "PHYS-003",
+      "submissionTimestamp": "2024-01-12T08:30:00Z",
+      "lastUpdated": "2024-01-14T15:00:00Z"
+    }
+  ]
+}

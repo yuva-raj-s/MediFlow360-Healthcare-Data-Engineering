@@ -1,0 +1,1 @@
+{"type":"record","name":"claim","fields":[{"name":"claimId","type":"string"}]}

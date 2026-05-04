@@ -1,0 +1,24 @@
+# Azure DevOps CI/CD
+trigger:
+  - main
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  jobs:
+  - job: Validate
+    steps:
+    - script: pip install pytest && pytest tests/
+      displayName: 'Run PySpark Unit Tests'
+
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+  - job: DeployADF
+    steps:
+    - task: AzureResourceGroupDeployment@2
+      inputs:
+        azureSubscription: 'MRHS-Prod-ServiceConnection'
+        resourceGroupName: 'mrhs-rg-mediflow360'
+        csmFile: 'arm-templates/adf.json'

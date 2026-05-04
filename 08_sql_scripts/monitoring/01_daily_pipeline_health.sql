@@ -1,0 +1,1 @@
+SELECT pipeline_name, status, count(*) FROM mrhs_audit.pipeline_audit_log GROUP BY pipeline_name, status;

@@ -1,0 +1,9 @@
+# MediFlow360 GitIgnore
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/
+.idea/
+.gemini/
+*.tmp
+temp_*/

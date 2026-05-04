@@ -1,0 +1,30 @@
+{
+  "name": "LS_MySQL_HIS_Chennai",
+  "properties": {
+    "description": "MySQL 8.0 on-prem HIS (Hospital Information System) — Chennai hospital. Requires Self-Hosted Integration Runtime (mrhs-shir-chennai) installed on hospital server at 192.168.10.50. See INC-006 for SHIR downtime history.",
+    "type": "MySql",
+    "typeProperties": {
+      "connectionString": {
+        "type": "AzureKeyVaultSecret",
+        "store": { "referenceName": "LS_KeyVault", "type": "LinkedServiceReference" },
+        "secretName": "mysql-his-chennai-connstr"
+      },
+      "server": "192.168.10.50",
+      "port": 3306,
+      "database": "mrhs_his_chennai",
+      "username": "adf_reader",
+      "password": {
+        "type": "AzureKeyVaultSecret",
+        "store": { "referenceName": "LS_KeyVault", "type": "LinkedServiceReference" },
+        "secretName": "mysql-his-chennai-pwd"
+      },
+      "sslMode": 1,
+      "useSystemTrustStore": false
+    },
+    "connectVia": {
+      "referenceName": "IR_SelfHosted_Chennai",
+      "type": "IntegrationRuntimeReference"
+    },
+    "annotations": ["S1", "MySQL", "OnPrem", "SHIR"]
+  }
+}

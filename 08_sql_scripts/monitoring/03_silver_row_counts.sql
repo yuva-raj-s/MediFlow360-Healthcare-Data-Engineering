@@ -1,0 +1,1 @@
+SELECT 'dim_patient' as tbl, count(*) FROM silver.dim_patient;

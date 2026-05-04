@@ -1,0 +1,1 @@
+INSERT INTO silver.dim_hospital (code, name) VALUES ('MRHS-CHN', 'Chennai HQ');

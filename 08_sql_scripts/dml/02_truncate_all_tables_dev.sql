@@ -1,0 +1,1 @@
+TRUNCATE TABLE silver.dim_patient; -- DEV ONLY

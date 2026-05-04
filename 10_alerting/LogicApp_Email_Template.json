@@ -1,0 +1,15 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "actions": {
+      "Send_an_email_(V2)": {
+        "inputs": {
+          "body": "<h2>MediFlow360 Alert</h2><p><b>Severity:</b> @{triggerBody()?['severity']}</p><p><b>Message:</b> @{triggerBody()?['message']}</p>",
+          "subject": "[@{triggerBody()?['severity']}] MediFlow360 - @{triggerBody()?['title']}",
+          "to": "@if(equals(triggerBody()?['severity'], 'CRITICAL'), 'cio@mrhs.in; de-team@mrhs-de.in', 'de-team@mrhs-de.in')"
+        },
+        "type": "ApiConnection"
+      }
+    }
+  }
+}

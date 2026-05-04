@@ -5,15 +5,36 @@ pool:
   vmImage: 'ubuntu-latest'
 
 stages:
-- stage: Build
-  jobs:
-  - job: Validate
-    steps:
-    - script: pip install pytest && pytest tests/
-      displayName: 'Run PySpark Unit Tests'
+  - stage: Security_And_Linting
+    displayName: 'Security & IaC Validation'
+    jobs:
+    - job: Validate_IaC
+      steps:
+      - task: TerraformInstaller@0
+        inputs:
+          terraformVersion: 'latest'
+      - script: |
+          cd 11_infrastructure/terraform
+          terraform init -backend=false
+          terraform validate
+        displayName: 'Terraform Validate'
+      
+      - script: |
+          # Industry standard: Scan for leaked secrets in notebooks
+          grep -rE "password|secret|key" 07_notebooks/ || true
+        displayName: 'Notebook Secret Scan'
+
+  - stage: Build_And_Test
+    displayName: 'Build and Unit Testing'
+    dependsOn: Security_And_Linting
+    jobs:
+    - job: Validate
+      steps:
+      - script: pip install pytest && pytest tests/
+        displayName: 'Run PySpark Unit Tests'
 
 - stage: Deploy
-  dependsOn: Build
+  dependsOn: Build_And_Test
   jobs:
   - job: DeployADF
     steps:

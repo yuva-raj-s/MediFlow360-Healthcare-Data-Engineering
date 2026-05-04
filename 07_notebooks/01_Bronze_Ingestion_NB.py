@@ -16,13 +16,7 @@ start_time = datetime.now(timezone.utc)
 print(f"[Bronze] Run ID: {RUN_ID} | Source: {SOURCE_SYSTEM}")
 
 
-def add_audit_columns(df, source_system: str):
-    """Add standard audit columns to every Bronze record."""
-    return df \
-        .withColumn("_src_system", lit(source_system)) \
-        .withColumn("_load_timestamp", current_timestamp()) \
-        .withColumn("_pipeline_run_id", lit(RUN_ID)) \
-        .withColumn("_load_date", current_date())
+# Standard metadata is now handled by Helper.add_metadata_columns()
 
 
 def strip_bom(text: str) -> str:
@@ -77,7 +71,7 @@ def validate_and_land_s1_patients(watermark_val: str):
         .withColumn("first_name", trim(upper(col("first_name")))) \
         .withColumn("last_name", trim(upper(col("last_name"))))
 
-    processed_df = add_audit_columns(processed_df, "HIS-CHN")
+    processed_df = add_metadata_columns(processed_df, "HIS-CHN", RUN_ID)
 
     # Schema validation: required columns check
     required_cols = ["patient_id_src", "first_name", "last_name", "date_of_birth", "updated_at"]
@@ -90,10 +84,12 @@ def validate_and_land_s1_patients(watermark_val: str):
     if not dob_nulls["passed"]:
         send_alert(SEVERITY_WARNING, "High DOB Null Rate", f"Null rate: {dob_nulls['null_rate_pct']}%", "Bronze_NB", "patients")
 
-    # Write to Bronze
-    load_date = datetime.now().strftime("%Y/%m/%d")
-    output_path = get_bronze_path("s1_patients", load_date)
-    processed_df.write.mode("overwrite").parquet(output_path)
+    # Write to Bronze - Standard practice: use mergeSchema to allow evolutionary changes
+    processed_df.write \
+        .format("delta") \
+        .option("mergeSchema", "true") \
+        .mode("append") \
+        .saveAsTable(f"{UC_CATALOG}.{UC_SCHEMA_BRONZE}.patients")
 
     count = processed_df.count()
     print(f"[Bronze] S1 Patients written: {count} records → {output_path}")
@@ -130,11 +126,13 @@ def validate_and_land_s3_lab_sftp(file_path: str):
         .withColumn("test_code", trim(upper(col("test_code")))) \
         .withColumn("_src_filename", lit(src_filename))
 
-    processed_df = add_audit_columns(processed_df, "LIS-SFTP")
+    processed_df = add_metadata_columns(processed_df, "LIS-SFTP", RUN_ID)
 
-    load_date = datetime.now().strftime("%Y/%m/%d")
-    output_path = get_bronze_path("s3_lab_results", load_date)
-    processed_df.write.mode("append").parquet(output_path)
+    processed_df.write \
+        .format("delta") \
+        .option("mergeSchema", "true") \
+        .mode("append") \
+        .saveAsTable(f"{UC_CATALOG}.{UC_SCHEMA_BRONZE}.lab_results")
 
     count = processed_df.count()
     print(f"[Bronze] S3 Lab Results written: {count} records → {output_path}")

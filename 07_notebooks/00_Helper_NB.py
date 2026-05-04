@@ -283,7 +283,26 @@ def send_alert(severity: str, title: str, message: str, pipeline: str, entity: s
 
 
 # ============================================================
-# SECTION 6: DATA QUALITY UTILITIES
+# SECTION 6: METADATA & DATA LINEAGE
+# ============================================================
+
+def add_metadata_columns(df, source_name: str, run_id: str):
+    """
+    Standard Industry Practice: Inject metadata into every row for lineage.
+    _input_file_name: The actual source path
+    _load_timestamp: When the data was processed
+    _source_system: Logic source identifier
+    _run_id: Unique pipeline run ID
+    """
+    from pyspark.sql.functions import input_file_name, current_timestamp, lit
+    return df \
+        .withColumn("_source_system", lit(source_name)) \
+        .withColumn("_load_timestamp", current_timestamp()) \
+        .withColumn("_input_file_name", input_file_name()) \
+        .withColumn("_run_id", lit(run_id))
+
+# ============================================================
+# SECTION 7: DATA QUALITY UTILITIES
 # ============================================================
 
 def check_null_rate(df, column_name: str, threshold_pct: float = 5.0) -> dict:

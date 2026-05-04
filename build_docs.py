@@ -175,13 +175,21 @@ html_template = f"""<!DOCTYPE html>
         .prose pre {{ background: #0b1120; border: 1px solid rgba(0,240,255,0.2); padding: 1rem; border-radius: 0.5rem; }}
         .prose code {{ color: #00f0ff; font-family: 'Fira Code', monospace; font-weight: 500; }}
 
-        /* Tab panel layout - absolute so they never fight with the nav */
-        #view-container {{ position: relative; flex: 1 1 0%; overflow: hidden; }}
-        .view-panel {{ position: absolute; inset: 0; overflow-y: auto; display: none; scrollbar-width: thin; scrollbar-color: rgba(0,240,255,0.2) transparent; }}
-        #view-docs {{ flex-direction: column; }}
-        .view-panel::-webkit-scrollbar {{ width: 6px; }}
-        .view-panel::-webkit-scrollbar-track {{ background: transparent; }}
-        .view-panel::-webkit-scrollbar-thumb {{ background: rgba(0,240,255,0.2); border-radius: 3px; }}
+        .view-panel::-webkit-scrollbar-thumb {{ background: rgba(0, 240, 255, 0.2); border-radius: 3px; }}
+
+        /* Office Mode specific: Dossier Feel */
+        .dossier-card {{ position: relative; background: rgba(10, 20, 40, 0.6); border: 1px solid rgba(0, 240, 255, 0.1); border-left: 4px solid #00f0ff; overflow: hidden; transition: all 0.3s ease; }}
+        .dossier-card:hover {{ border-color: #00f0ff; background: rgba(0, 240, 255, 0.05); transform: translateX(10px); }}
+        .dossier-id {{ font-family: 'Fira Code', monospace; font-size: 10px; color: rgba(0, 240, 255, 0.5); text-transform: uppercase; letter-spacing: 2px; }}
+        .dossier-scan {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent, rgba(0, 240, 255, 0.05), transparent); transform: translateY(-100%); pointer-events: none; }}
+        .dossier-card:hover .dossier-scan {{ animation: scanline 2s linear infinite; }}
+
+        /* Setup Mode specific: Init Log */
+        .init-log {{ background: #020617; border: 1px solid #1e293b; border-radius: 4px; padding: 10px; font-family: 'Fira Code', monospace; font-size: 11px; color: #94a3b8; margin-top: 15px; position: relative; }}
+        .init-log::before {{ content: 'LOG OUTPUT'; position: absolute; top: -8px; left: 10px; background: #020617; padding: 0 5px; font-size: 9px; color: #00f0ff; border: 1px solid #1e293b; }}
+        .log-line {{ margin-bottom: 2px; border-left: 2px solid transparent; padding-left: 8px; transition: all 0.2s; }}
+        .log-line:hover {{ border-left-color: #00f0ff; background: rgba(0, 240, 255, 0.05); color: #f8fafc; }}
+        .status-tag {{ font-weight: bold; color: #00f0ff; margin-right: 8px; }}
     </style>
 </head>
 <body style="display:flex;flex-direction:column;height:100vh;overflow:hidden;background:#050a15;color:#f8fafc;font-family:'Inter',sans-serif;">
@@ -442,10 +450,20 @@ html_template = f"""<!DOCTYPE html>
                     <div class="timeline-node top-0"><i data-lucide="shield" class="w-5 h-5 text-cyber-400"></i></div>
                     <div class="w-[45%] glass-card p-8 rounded-2xl relative text-left">
                         <div class="absolute top-6 -left-[20px] w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-r-[20px] border-r-[rgba(0,240,255,0.2)]"></div>
-                        <div class="text-cyber-400 font-mono text-sm font-bold mb-2">PHASE 01</div>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="text-cyber-400 font-mono text-sm font-bold uppercase tracking-widest">PHASE 01 // FOUNDATION</div>
+                            <span class="text-[10px] font-mono text-slate-500">[0x7F4B01]</span>
+                        </div>
                         <h4 class="text-2xl font-display font-bold text-white mb-4">Foundation & Networking</h4>
-                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Establish the secure backbone. Provision the Resource Group, Virtual Network (VNet), and Subnets. Configure Private Endpoints for all storage and database services to ensure zero public exposure.</p>
-                        <button onclick="openDoc('11_infrastructure', 'VNet_Architecture.md')" class="text-xs font-mono text-cyber-400 hover:text-white border-b border-cyber-400">VNET ARCHITECTURE -></button>
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Establish the secure backbone. Provision the Resource Group, Virtual Network (VNet), and Subnets.</p>
+                        
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[EXEC]</span> az group create --name mrhs-rg-mediflow360</div>
+                            <div class="log-line"><span class="status-tag">[WAIT]</span> provisioning private_endpoints...</div>
+                            <div class="log-line"><span class="status-tag">[DONE]</span> connectivity established.</div>
+                        </div>
+
+                        <button onclick="openDoc('11_infrastructure', 'VNet_Architecture.md')" class="mt-6 text-xs font-mono text-cyber-400 hover:text-white border-b border-cyber-400 flex items-center gap-2 w-fit"><i data-lucide="external-link" class="w-3 h-3"></i> ACCESS NETWORK TOPOLOGY</button>
                     </div>
                 </div>
 
@@ -454,11 +472,20 @@ html_template = f"""<!DOCTYPE html>
                     <div class="timeline-node top-0"><i data-lucide="layers" class="w-5 h-5 text-purple-400"></i></div>
                     <div class="w-[45%] glass-card p-8 rounded-2xl relative text-left" style="border-color: rgba(168,85,247,0.3);">
                         <div class="absolute top-6 -right-[20px] w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-l-[20px] border-l-[rgba(168,85,247,0.2)]"></div>
-                        <div class="text-purple-400 font-mono text-sm font-bold mb-2">PHASE 02</div>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="text-purple-400 font-mono text-sm font-bold uppercase tracking-widest">PHASE 02 // GOVERNANCE</div>
+                            <span class="text-[10px] font-mono text-slate-500">[0x7F4B02]</span>
+                        </div>
                         <h4 class="text-2xl font-display font-bold text-white mb-4">Governance & Storage</h4>
-                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Setup ADLS Gen2 with Hierarchical Namespace. Initialize the <b>Unity Catalog</b> Metastore and assign it to the workspace. Create catalogs and schemas for the Medallion layers.</p>
-                        <div class="code-snippet mb-4">./create_dirs.ps1</div>
-                        <button onclick="openDoc('00_Root', 'create_dirs.ps1')" class="text-xs font-mono text-purple-400 hover:text-white border-b border-purple-400">STORAGE INIT SCRIPT -></button>
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Initialize ADLS Gen2 with Hierarchical Namespace and bind to Unity Catalog.</p>
+                        
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[EXEC]</span> ./create_dirs.ps1 --target-adls</div>
+                            <div class="log-line"><span class="status-tag">[SYNC]</span> unity_catalog_metastore::assign(workspace_id)</div>
+                            <div class="log-line"><span class="status-tag">[DONE]</span> schemas created: bronze, silver, gold.</div>
+                        </div>
+
+                        <button onclick="openDoc('00_Root', 'create_dirs.ps1')" class="mt-6 text-xs font-mono text-purple-400 hover:text-white border-b border-purple-400 flex items-center gap-2 w-fit"><i data-lucide="terminal" class="w-3 h-3"></i> EXECUTE STORAGE SCRIPT</button>
                     </div>
                 </div>
 
@@ -467,10 +494,20 @@ html_template = f"""<!DOCTYPE html>
                     <div class="timeline-node top-0"><i data-lucide="key" class="w-5 h-5 text-blue-400"></i></div>
                     <div class="w-[45%] glass-card p-8 rounded-2xl relative text-left" style="border-color: rgba(59,130,246,0.3);">
                         <div class="absolute top-6 -left-[20px] w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-r-[20px] border-r-[rgba(59,130,246,0.2)]"></div>
-                        <div class="text-blue-400 font-mono text-sm font-bold mb-2">PHASE 03</div>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="text-blue-400 font-mono text-sm font-bold uppercase tracking-widest">PHASE 03 // SECURITY</div>
+                            <span class="text-[10px] font-mono text-slate-500">[0x7F4B03]</span>
+                        </div>
                         <h4 class="text-2xl font-display font-bold text-white mb-4">Security & Connectivity</h4>
-                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Configure Azure Key Vault and create Secret Scopes. Deploy the Self-Hosted Integration Runtime (SHIR) for secure on-prem access to the Chennai HIS MySQL database.</p>
-                        <button onclick="openDoc('02_solution_design', 'Security_Architecture.md')" class="text-xs font-mono text-blue-400 hover:text-white border-b border-blue-400">SECURITY SPECS -></button>
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Vault initialization and SHIR (Self-Hosted Integration Runtime) deployment.</p>
+                        
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[AUTH]</span> keyvault_scope::create(mediflow-secrets)</div>
+                            <div class="log-line"><span class="status-tag">[NODE]</span> shir-chennai-node-01 :: STATUS=ONLINE</div>
+                            <div class="log-line"><span class="status-tag">[DONE]</span> hybrid data link secured.</div>
+                        </div>
+
+                        <button onclick="openDoc('02_solution_design', 'Security_Architecture.md')" class="mt-6 text-xs font-mono text-blue-400 hover:text-white border-b border-blue-400 flex items-center gap-2 w-fit"><i data-lucide="shield-check" class="w-3 h-3"></i> VIEW SECURITY SPECS</button>
                     </div>
                 </div>
 
@@ -479,10 +516,20 @@ html_template = f"""<!DOCTYPE html>
                     <div class="timeline-node top-0"><i data-lucide="database" class="w-5 h-5 text-emerald-400"></i></div>
                     <div class="w-[45%] glass-card p-8 rounded-2xl relative text-left" style="border-color: rgba(16,185,129,0.3);">
                         <div class="absolute top-6 -right-[20px] w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-l-[20px] border-l-[rgba(16,185,129,0.2)]"></div>
-                        <div class="text-emerald-400 font-mono text-sm font-bold mb-2">PHASE 04</div>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="text-emerald-400 font-mono text-sm font-bold uppercase tracking-widest">PHASE 04 // TELEMETRY</div>
+                            <span class="text-[10px] font-mono text-slate-500">[0x7F4B04]</span>
+                        </div>
                         <h4 class="text-2xl font-display font-bold text-white mb-4">Operational Metadata</h4>
-                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Provision Azure SQL DB for operational telemetry. Execute DDLs to initialize the Watermark control system and Audit logging tables.</p>
-                        <button onclick="openDoc('08_sql_scripts/ddl', '05_create_watermark_table.sql')" class="text-xs font-mono text-emerald-400 hover:text-white border-b border-emerald-400">WATERMARK DDL -></button>
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Seed the Watermark and Audit tables in Azure SQL DB.</p>
+                        
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[SQL]</span> EXEC ddl.initialize_watermarks;</div>
+                            <div class="log-line"><span class="status-tag">[SEED]</span> INSERT INTO config.source_registry (7 rows)</div>
+                            <div class="log-line"><span class="status-tag">[DONE]</span> telemetry engine ready.</div>
+                        </div>
+
+                        <button onclick="openDoc('08_sql_scripts/ddl', '05_create_watermark_table.sql')" class="mt-6 text-xs font-mono text-emerald-400 hover:text-white border-b border-emerald-400 flex items-center gap-2 w-fit"><i data-lucide="database" class="w-3 h-3"></i> INITIALIZE DDL</button>
                     </div>
                 </div>
 
@@ -491,10 +538,20 @@ html_template = f"""<!DOCTYPE html>
                     <div class="timeline-node top-0"><i data-lucide="git-branch" class="w-5 h-5 text-cyan-400"></i></div>
                     <div class="w-[45%] glass-card p-8 rounded-2xl relative text-left" style="border-color: rgba(6,182,212,0.3);">
                         <div class="absolute top-6 -left-[20px] w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-r-[20px] border-r-[rgba(6,182,212,0.2)]"></div>
-                        <div class="text-cyan-400 font-mono text-sm font-bold mb-2">PHASE 05</div>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="text-cyan-400 font-mono text-sm font-bold uppercase tracking-widest">PHASE 05 // INGESTION</div>
+                            <span class="text-[10px] font-mono text-slate-500">[0x7F4B05]</span>
+                        </div>
                         <h4 class="text-2xl font-display font-bold text-white mb-4">Ingestion Orchestration</h4>
-                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Deploy the 7 ADF pipelines. Implement the Master Orchestrator with dynamic metadata mapping and delta-load logic for all heterogeneous sources.</p>
-                        <button onclick="openDoc('09_adf_pipelines/pipeline_configs', 'PL_Master_Orchestrator.json')" class="text-xs font-mono text-cyan-400 hover:text-white border-b border-cyan-400">ORCHESTRATOR JSON -></button>
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">ADF pipeline deployment with dynamic metadata mapping.</p>
+                        
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[JSON]</span> pipeline.deploy(MasterOrchestrator)</div>
+                            <div class="log-line"><span class="status-tag">[LOOP]</span> ForEach(source in source_list)</div>
+                            <div class="log-line"><span class="status-tag">[DONE]</span> active ingestion loops initialized.</div>
+                        </div>
+
+                        <button onclick="openDoc('09_adf_pipelines/pipeline_configs', 'PL_Master_Orchestrator.json')" class="mt-6 text-xs font-mono text-cyan-400 hover:text-white border-b border-cyan-400 flex items-center gap-2 w-fit"><i data-lucide="git-merge" class="w-3 h-3"></i> REVIEW PIPELINES</button>
                     </div>
                 </div>
 
@@ -503,10 +560,20 @@ html_template = f"""<!DOCTYPE html>
                     <div class="timeline-node top-0"><i data-lucide="code-2" class="w-5 h-5 text-orange-400"></i></div>
                     <div class="w-[45%] glass-card p-8 rounded-2xl relative text-left" style="border-color: rgba(251,146,60,0.3);">
                         <div class="absolute top-6 -right-[20px] w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-l-[20px] border-l-[rgba(251,146,60,0.2)]"></div>
-                        <div class="text-orange-400 font-mono text-sm font-bold mb-2">PHASE 06</div>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="text-orange-400 font-mono text-sm font-bold uppercase tracking-widest">PHASE 06 // PROCESSING</div>
+                            <span class="text-[10px] font-mono text-slate-500">[0x7F4B06]</span>
+                        </div>
                         <h4 class="text-2xl font-display font-bold text-white mb-4">Medallion Processing</h4>
-                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Implement the Databricks notebook suite. Transition from DBFS mounts to Service Principal authentication. Deploy SCD Type 2 logic for history tracking in Silver Delta tables.</p>
-                        <button onclick="openDoc('07_notebooks', '02b_Silver_SCD2_NB.py')" class="text-xs font-mono text-orange-400 hover:text-white border-b border-orange-400">SCD-2 NOTEBOOK -></button>
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">PySpark logic for SCD Type 2 and data quality gating.</p>
+                        
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[PY]</span> databricks.notebook.run(02b_Silver_SCD2)</div>
+                            <div class="log-line"><span class="status-tag">[UC]</span> MERGE INTO silver.patients USING updates...</div>
+                            <div class="log-line"><span class="status-tag">[DONE]</span> high-fidelity historical state active.</div>
+                        </div>
+
+                        <button onclick="openDoc('07_notebooks', '02b_Silver_SCD2_NB.py')" class="mt-6 text-xs font-mono text-orange-400 hover:text-white border-b border-orange-400 flex items-center gap-2 w-fit"><i data-lucide="code" class="w-3 h-3"></i> DEPLOY NOTEBOOKS</button>
                     </div>
                 </div>
 
@@ -515,10 +582,20 @@ html_template = f"""<!DOCTYPE html>
                     <div class="timeline-node top-0"><i data-lucide="zap" class="w-5 h-5 text-pink-400"></i></div>
                     <div class="w-[45%] glass-card p-8 rounded-2xl relative text-left" style="border-color: rgba(236,72,153,0.3);">
                         <div class="absolute top-6 -left-[20px] w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-r-[20px] border-r-[rgba(236,72,153,0.2)]"></div>
-                        <div class="text-pink-400 font-mono text-sm font-bold mb-2">PHASE 07</div>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="text-pink-400 font-mono text-sm font-bold uppercase tracking-widest">PHASE 07 // SERVING</div>
+                            <span class="text-[10px] font-mono text-slate-500">[0x7F4B07]</span>
+                        </div>
                         <h4 class="text-2xl font-display font-bold text-white mb-4">Enterprise Serving</h4>
-                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Provision Azure Synapse Dedicated SQL Pool. Configure PolyBase loading patterns to move Gold aggregates into Hash-distributed analytics tables.</p>
-                        <button onclick="openDoc('11_infrastructure', 'Synapse_Deployment.md')" class="text-xs font-mono text-pink-400 hover:text-white border-b border-pink-400">SYNAPSE DEPLOY GUIDE -></button>
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Synapse Dedicated Pool initialization and PolyBase loading.</p>
+                        
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[DW]</span> provisioning dw100c_pool...</div>
+                            <div class="log-line"><span class="status-tag">[COPY]</span> FROM adls.gold TO dedicated_pool;</div>
+                            <div class="log-line"><span class="status-tag">[DONE]</span> analytics layer synchronized.</div>
+                        </div>
+
+                        <button onclick="openDoc('11_infrastructure', 'Synapse_Deployment.md')" class="mt-6 text-xs font-mono text-pink-400 hover:text-white border-b border-pink-400 flex items-center gap-2 w-fit"><i data-lucide="database" class="w-3 h-3"></i> SYNAPSE DEPLOY GUIDE</button>
                     </div>
                 </div>
 
@@ -527,10 +604,20 @@ html_template = f"""<!DOCTYPE html>
                     <div class="timeline-node top-0"><i data-lucide="bell" class="w-5 h-5 text-red-400"></i></div>
                     <div class="w-[45%] glass-card p-8 rounded-2xl relative text-left" style="border-color: rgba(248,113,113,0.3);">
                         <div class="absolute top-6 -right-[20px] w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-l-[20px] border-l-[rgba(248,113,113,0.2)]"></div>
-                        <div class="text-red-400 font-mono text-sm font-bold mb-2">PHASE 08</div>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="text-red-400 font-mono text-sm font-bold uppercase tracking-widest">PHASE 08 // OBSERVABILITY</div>
+                            <span class="text-[10px] font-mono text-slate-500">[0x7F4B08]</span>
+                        </div>
                         <h4 class="text-2xl font-display font-bold text-white mb-4">Observability & Alerts</h4>
-                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Setup Logic Apps as a centralized alert router. Connect ADF and Databricks failure triggers to the Logic App for real-time Teams/Email notifications.</p>
-                        <button onclick="openDoc('07_notebooks', '00_Helper_NB.py')" class="text-xs font-mono text-red-400 hover:text-white border-b border-red-400">ALERT DISPATCHER -></button>
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Logic App router configuration and Teams integration.</p>
+                        
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[PUSH]</span> webhook::trigger(failure_alert)</div>
+                            <div class="log-line"><span class="status-tag">[TEAMS]</span> post_message(pipeline_failed_prod)</div>
+                            <div class="log-line"><span class="status-tag">[DONE]</span> monitoring system ONLINE.</div>
+                        </div>
+
+                        <button onclick="openDoc('07_notebooks', '00_Helper_NB.py')" class="mt-6 text-xs font-mono text-red-400 hover:text-white border-b border-red-400 flex items-center gap-2 w-fit"><i data-lucide="bell-ring" class="w-3 h-3"></i> ALERT DISPATCHER</button>
                     </div>
                 </div>
 
@@ -563,54 +650,54 @@ html_template = f"""<!DOCTYPE html>
                 <!-- Team Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
 
-                    <div class="glass-card p-6 rounded-2xl border border-purple-500/20 hover:border-purple-400/60 transition-all hover:-translate-y-2 cursor-pointer" onclick="openDoc('00_project_charter','RACI_Matrix.md')">
+                    <div class="dossier-card p-6 rounded-r-2xl cursor-pointer" onclick="openDoc('00_project_charter','RACI_Matrix.md')">
+                        <div class="dossier-scan"></div>
                         <div class="flex items-center gap-4 mb-4">
-                            <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-white" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">PS</div>
+                            <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-white border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">PS</div>
                             <div>
-                                <div class="text-white font-bold font-display">Priya Sharma</div>
-                                <div class="text-purple-400 text-xs font-mono">DE-001 · Lead Data Engineer</div>
-                                <div class="text-slate-500 text-xs mt-0.5">Chennai (WFH)</div>
+                                <div class="dossier-id">OPERATIVE: DE-001 // LEAD</div>
+                                <div class="text-white font-bold font-display text-lg">Priya Sharma</div>
+                                <div class="text-slate-500 text-[10px] font-mono mt-0.5">LOCATION: CHENNAI_DC</div>
                             </div>
                         </div>
-                        <p class="text-slate-400 text-xs leading-relaxed font-mono mb-3">Owns the entire architecture. Caught the infamous INC-005 SCD watermark loop. Enforces the "no hardcoded creds" rule.</p>
+                        <p class="text-slate-400 text-xs leading-relaxed font-mono mb-4 border-l border-purple-500/30 pl-3">Architecture lead. Discovered the INC-005 SCD watermark loop. Protocol enforced: No hardcoded credentials.</p>
                         <div class="flex flex-wrap gap-2">
-                            <span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs font-mono">PySpark</span>
-                            <span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs font-mono">Medallion</span>
-                            <span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs font-mono">DQ Gating</span>
+                            <span class="px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[10px] font-mono border border-purple-500/20">PYSPARK_ENGINE</span>
+                            <span class="px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[10px] font-mono border border-purple-500/20">MEDALLION_CTRL</span>
                         </div>
                     </div>
 
-                    <div class="glass-card p-6 rounded-2xl border border-blue-500/20 hover:border-blue-400/60 transition-all hover:-translate-y-2 cursor-pointer" onclick="openDoc('09_adf_pipelines/pipeline_configs','PL_Master_Orchestrator.json')">
+                    <div class="dossier-card p-6 rounded-r-2xl cursor-pointer" style="border-left-color: #3b82f6;" onclick="openDoc('09_adf_pipelines/pipeline_configs','PL_Master_Orchestrator.json')">
+                        <div class="dossier-scan"></div>
                         <div class="flex items-center gap-4 mb-4">
-                            <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-white" style="background:linear-gradient(135deg,#2563eb,#0284c7);">AP</div>
+                            <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-white border-2 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" style="background:linear-gradient(135deg,#2563eb,#0284c7);">AP</div>
                             <div>
-                                <div class="text-white font-bold font-display">Arjun Patel</div>
-                                <div class="text-blue-400 text-xs font-mono">DE-002 · Senior DE – ADF</div>
-                                <div class="text-slate-500 text-xs mt-0.5">Chennai Office</div>
+                                <div class="dossier-id">OPERATIVE: DE-002 // ADF</div>
+                                <div class="text-white font-bold font-display text-lg">Arjun Patel</div>
+                                <div class="text-slate-500 text-[10px] font-mono mt-0.5">LOCATION: ON_PREM_SHIR</div>
                             </div>
                         </div>
-                        <p class="text-slate-400 text-xs leading-relaxed font-mono mb-3">The ADF wizard. Lost 3 hrs debugging 1-based API pagination. Authored INC-007 OAuth2 RCA. On-call rotation week 3.</p>
+                        <p class="text-slate-400 text-xs leading-relaxed font-mono mb-4 border-l border-blue-500/30 pl-3">ADF orchestrator. Resolved the 1-based API pagination bug. Currently managing the OAuth2 Token refresh logic.</p>
                         <div class="flex flex-wrap gap-2">
-                            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-xs font-mono">ADF</span>
-                            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-xs font-mono">SHIR</span>
-                            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-xs font-mono">OAuth2</span>
+                            <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-mono border border-blue-500/20">ORCHESTRATOR_JSON</span>
+                            <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-mono border border-blue-500/20">SHIR_CONNECT</span>
                         </div>
                     </div>
 
-                    <div class="glass-card p-6 rounded-2xl border border-cyan-500/20 hover:border-cyan-400/60 transition-all hover:-translate-y-2 cursor-pointer" onclick="openDoc('07_notebooks','02b_Silver_SCD2_NB.py')">
+                    <div class="dossier-card p-6 rounded-r-2xl cursor-pointer" style="border-left-color: #06b6d4;" onclick="openDoc('07_notebooks','02b_Silver_SCD2_NB.py')">
+                        <div class="dossier-scan"></div>
                         <div class="flex items-center gap-4 mb-4">
-                            <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-white" style="background:linear-gradient(135deg,#0891b2,#0e7490);">KR</div>
+                            <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-white border-2 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.5)]" style="background:linear-gradient(135deg,#0891b2,#0e7490);">KR</div>
                             <div>
-                                <div class="text-white font-bold font-display">Kavitha Rajan</div>
-                                <div class="text-cyan-400 text-xs font-mono">DE-003 · Databricks Engineer</div>
-                                <div class="text-slate-500 text-xs mt-0.5">Coimbatore (WFH)</div>
+                                <div class="dossier-id">OPERATIVE: DE-003 // DBX</div>
+                                <div class="text-white font-bold font-display text-lg">Kavitha Rajan</div>
+                                <div class="text-slate-500 text-[10px] font-mono mt-0.5">LOCATION: COIMBATORE_REMOTE</div>
                             </div>
                         </div>
-                        <p class="text-slate-400 text-xs leading-relaxed font-mono mb-3">Wrote all SCD notebooks. Discovered the BOM character bug in LIS CSV files at 1 AM. Documents every gotcha religiously.</p>
+                        <p class="text-slate-400 text-xs leading-relaxed font-mono mb-4 border-l border-cyan-500/30 pl-3">Notebook engineer. Identified the BOM character bug in legacy CSVs. Lead for SCD-2 Delta Lake implementation.</p>
                         <div class="flex flex-wrap gap-2">
-                            <span class="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 rounded text-xs font-mono">SCD-2</span>
-                            <span class="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 rounded text-xs font-mono">Delta Lake</span>
-                            <span class="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 rounded text-xs font-mono">PySpark</span>
+                            <span class="px-2 py-0.5 bg-cyan-500/10 text-cyan-400 rounded text-[10px] font-mono border border-cyan-500/20">DELTA_LAKE_CORE</span>
+                            <span class="px-2 py-0.5 bg-cyan-500/10 text-cyan-400 rounded text-[10px] font-mono border border-cyan-500/20">SCD_2_LOGIC</span>
                         </div>
                     </div>
 

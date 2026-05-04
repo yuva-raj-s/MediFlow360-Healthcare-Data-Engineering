@@ -175,6 +175,12 @@ html_template = f"""<!DOCTYPE html>
         .prose pre {{ background: #0b1120; border: 1px solid rgba(0,240,255,0.2); padding: 1rem; border-radius: 0.5rem; }}
         .prose code {{ color: #00f0ff; font-family: 'Fira Code', monospace; font-weight: 500; }}
 
+        /* Tab panel layout - absolute so they never fight with the nav */
+        #view-container {{ position: relative; flex: 1 1 0%; overflow: hidden; }}
+        .view-panel {{ position: absolute; inset: 0; overflow-y: auto; display: none; scrollbar-width: thin; scrollbar-color: rgba(0,240,255,0.2) transparent; }}
+        #view-docs {{ flex-direction: column; }}
+        .view-panel::-webkit-scrollbar {{ width: 6px; }}
+        .view-panel::-webkit-scrollbar-track {{ background: transparent; }}
         .view-panel::-webkit-scrollbar-thumb {{ background: rgba(0, 240, 255, 0.2); border-radius: 3px; }}
 
         /* Office Mode specific: Dossier Feel */

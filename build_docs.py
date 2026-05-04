@@ -946,7 +946,7 @@ html_template = f"""<!DOCTYPE html>
                             <p class="text-xs text-slate-400 mb-4">To avoid re-reading 100GB every day, we use an incremental watermark. We store the <code>MAX(updated_at)</code> for every table in an Azure SQL "Control Table."</p>
                             <div class="code-snippet">
                                 SELECT * FROM source_table 
-                                WHERE last_modified > '@{pipeline().parameters.last_watermark}'
+                                WHERE last_modified > '@{{pipeline().parameters.last_watermark}}'
                             </div>
                         </div>
                     </section>

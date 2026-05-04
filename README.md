@@ -30,9 +30,9 @@ The platform utilizes a modern Azure Data Stack, carefully orchestrated to ensur
          ↓
 [ADLS Gen2: Bronze Layer] (Raw, Immutable, Partitioned)
          ↓
-[Databricks: Silver Layer] (SCD Types 1/2/3, PII Masking, Cleansed)
+[Databricks: Silver Layer] (Unity Catalog, PII Masking Engine, SCD Type 2)
          ↓
-[Databricks: Gold Layer] (Aggregated KPIs, Fraud Scoring)
+[Databricks: Gold Layer] (Aggregated KPIs, Governance Automation)
          ↓
 [Azure Synapse Analytics: Dedicated SQL Pool] (Enterprise Serving Layer)
          ↓
@@ -69,6 +69,7 @@ Hobby_Healthcare_Complex/
 ├── 17_meeting_notes/          Meeting records (kickoff → sprint retros)
 ├── 18_sprint_artifacts/       Sprint backlogs, product backlog, DoD
 ├── 19_power_bi/               Dashboard specs, DAX library, publish guide
+├── 20_governance_automation/  [NEW] PII/PHI scrubbing, maintenance automation
 └── MediFlow360_Interactive_Guide.html  ← INTERACTIVE PLATFORM PORTAL
 ```
 
@@ -79,7 +80,7 @@ Hobby_Healthcare_Complex/
 1. **Access the Portal**: Open `MediFlow360_Interactive_Guide.html` in your browser. This portal serves as the single pane of glass for all architecture diagrams and deployment sequences.
 2. **Review the Medallion Implementation**: Read the Low-Level Design at `02_solution_design/LLD_Low_Level_Design.md`.
 3. **Understand Security**: Review the Zero-Trust implementation in `02_solution_design/Security_Architecture.md`.
-4. **Provision Azure Resources**: Execute the scripts located in `11_infrastructure/`.
+4. **Provision Azure Resources**: Use **Terraform** or **Bicep** templates located in `11_infrastructure/terraform/` or `11_infrastructure/bicep/`.
 
 ---
 

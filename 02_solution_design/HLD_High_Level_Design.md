@@ -25,7 +25,9 @@ S1:MySQL(SHIR) | S2:REST-API(OAuth2) | S3:SFTP | S4:CosmosDB | S5:PostgreSQL(CDC
         |
         v
 [DATABRICKS]  — Medallion Processing Engine (Unity Catalog, PySpark)
-  Bronze → Silver (SCD1/2/3 + watermarks) → Gold (KPIs + fraud scoring)
+  Bronze → Silver (SCD1/2/3 + PII Masking Engine) → Gold (KPIs + DQ Engine)
+[GOVERNANCE AUTOMATION]
+  PII/PHI Scrubbing (Regex/Hashing) | Automated Optimization (Vacuum/Optimize)
         |
         v
 [AZURE SYNAPSE ANALYTICS]  — Enterprise Serving Layer
@@ -81,7 +83,9 @@ Bedside monitor → IoT Hub → Event Hub → ADF Tumbling Window → Bronze →
 - All secrets in **Azure Key Vault** (zero hardcoded credentials)
 - **Managed Identity** for ADF → Key Vault auth
 - **Governance**: Unity Catalog manages fine-grained RBAC (Data Analysts granted SELECT on gold schemas)
-- **PII Masking** at Bronze→Silver: Aadhaar SHA-256 hashed, Phone partially masked
+- **PII Masking**: Centralized **PII Masking Engine** (Regex-based email masking + deterministic hashing)
+- **Metadata Lineage**: Every record injected with `_run_id`, `_load_ts`, and `_source_system` columns.
+- **Data Quality**: Metadata-driven DQ engine halts pipelines on critical schema/constraint violations.
 
 ---
 

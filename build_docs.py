@@ -879,13 +879,14 @@ html_template = f"""<!DOCTYPE html>
                     <div class="sticky top-8">
                         <h4 class="text-xs font-mono text-slate-500 uppercase mb-4 tracking-tighter">Course Modules</h4>
                         <div class="space-y-1">
-                            <a href="#m1" class="block p-3 rounded bg-cyber-500/10 border-l-2 border-cyber-400 text-white text-xs font-mono">01. THE BLUEPRINT</a>
-                            <a href="#m2" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">02. INFRASTRUCTURE (IaC)</a>
-                            <a href="#m3" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">03. BRONZE: THE LANDING</a>
-                            <a href="#m4" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">04. SILVER: THE CLEANSE</a>
-                            <a href="#m5" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">05. GOLD: THE INSIGHT</a>
-                            <a href="#m6" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">06. GOVERNANCE & PII</a>
-                            <a href="#m7" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">07. DEPLOYMENT & CI/CD</a>
+                            <a href="#m1" class="block p-3 rounded bg-cyber-500/10 border-l-2 border-cyber-400 text-white text-xs font-mono">01. BLUEPRINT & GOVERNANCE</a>
+                            <a href="#m2" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">02. RESOURCE CREATION (IaC)</a>
+                            <a href="#m3" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">03. INGESTION (ADF & BRONZE)</a>
+                            <a href="#m4" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">04. PROCESSING (SILVER & SCD)</a>
+                            <a href="#m5" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">05. SERVING (SYNAPSE & GOLD)</a>
+                            <a href="#m6" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">06. ANALYTICS (POWER BI)</a>
+                            <a href="#m7" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">07. MONITORING & ALERTING</a>
+                            <a href="#m8" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">08. CI/CD & DEVOPS</a>
                         </div>
                     </div>
                 </div>
@@ -897,93 +898,130 @@ html_template = f"""<!DOCTYPE html>
                     <section id="m1" class="space-y-6">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">01</span>
-                            <h3 class="text-2xl font-display font-bold text-white">The Project Blueprint</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Blueprint & Governance</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">Before writing a single line of code, we define the <strong>Business Requirements Document (BRD)</strong>. In Healthcare, we must track every requirement back to its clinical or financial source using a <strong>Requirements Traceability Matrix (RTM)</strong>.</p>
-                        <div class="glass-card p-6 rounded-xl border border-cyber-500/20 bg-slate-900/40">
-                            <h5 class="text-cyber-400 font-mono text-xs mb-3">KEY ARTIFACTS TO CHECK:</h5>
-                            <ul class="space-y-2 text-sm text-slate-300 font-mono">
-                                <li class="flex items-center gap-2"><i data-lucide="file-check" class="w-4 h-4 text-green-400"></i> BRD_MediFlow360_v2.0.md</li>
-                                <li class="flex items-center gap-2"><i data-lucide="file-check" class="w-4 h-4 text-green-400"></i> RACI_Matrix.md</li>
-                            </ul>
+                        <p class="text-slate-400 leading-relaxed">Every professional project begins with a <strong>Project Charter</strong>. This document aligns the CIO, Finance, and the Data Team on goals, budget, and scope. In Healthcare, we must immediately define our <strong>PII/PHI Matrix</strong>—identifying which columns are sensitive (e.g., Aadhaar, MRN) before the data even enters Azure.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="glass-card p-4 rounded border border-cyber-500/10 bg-slate-900/40">
+                                <h6 class="text-xs font-bold text-cyber-400 mb-2">STEP 1: THE CHARTER</h6>
+                                <p class="text-[10px] text-slate-500">Define stakeholders, RACI (who is responsible vs consulted), and the high-level roadmap.</p>
+                            </div>
+                            <div class="glass-card p-4 rounded border border-cyber-500/10 bg-slate-900/40">
+                                <h6 class="text-xs font-bold text-cyber-400 mb-2">STEP 2: THE BRD</h6>
+                                <p class="text-[10px] text-slate-500">Document the 7 source systems, their schema, and the KPIs the business expects.</p>
+                            </div>
                         </div>
                     </section>
 
                     <!-- Module 2 -->
-                    <section id="m2" class="space-y-6">
+                    <section id="m2" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">02</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Infrastructure as Code (IaC)</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Resource Creation (IaC)</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">Industry standard projects don't click buttons in the Azure Portal. We use <strong>Terraform</strong> or <strong>Bicep</strong> to provision resources. This ensures consistency across Dev, UAT, and Prod environments.</p>
+                        <p class="text-slate-400 leading-relaxed">We use **Infrastructure as Code (IaC)** to provision the Azure Stack. This allows us to "replicate" the environment in minutes if a region goes down. We use **Terraform** for provider-agnosticism and **Bicep** for Azure-native speed.</p>
                         <div class="init-log">
-                            <div class="log-line"><span class="status-tag">[TF]</span> terraform init</div>
-                            <div class="log-line"><span class="status-tag">[TF]</span> terraform apply -var="env=prod"</div>
-                            <div class="log-line text-green-400"><span class="status-tag">[TF]</span> + azurerm_storage_account.adls (CREATED)</div>
+                            <div class="log-line"><span class="status-tag">[TF]</span> Provisioning Resource Group: rg-mediflow-prod</div>
+                            <div class="log-line"><span class="status-tag">[TF]</span> Provisioning ADLS Gen2: mrhsadlsprod (HNS ENABLED)</div>
+                            <div class="log-line"><span class="status-tag">[TF]</span> Provisioning Synapse Workspace... [DW500c Scaling Applied]</div>
+                        </div>
+                        <div class="p-4 bg-blue-500/10 border border-blue-500/30 rounded text-xs text-blue-300 italic">
+                            Beginner Note: "HNS Enabled" stands for Hierarchical Namespace. This is what turns a standard Storage Account into a Data Lake (ADLS Gen2).
                         </div>
                     </section>
 
                     <!-- Module 3 -->
-                    <section id="m3" class="space-y-6">
+                    <section id="m3" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">03</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Bronze: The Raw Landing Zone</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Ingestion (ADF & Bronze)</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">The Bronze layer is <strong>Immutable</strong>. We ingest data exactly as it appears in the source systems. We add <strong>Metadata columns</strong> like <code>_load_timestamp</code> and <code>_run_id</code> for full lineage tracking.</p>
-                        <div class="glass-card p-4 border border-slate-700 bg-slate-900/80 rounded-lg">
-                            <p class="text-xs text-yellow-400 font-mono mb-2">// BEGINNER TIP: Never transform data in Bronze. Keep it raw to allow for easy reprocessing if logic changes.</p>
+                        <p class="text-slate-400 leading-relaxed">**Azure Data Factory (ADF)** is our orchestrator. It pulls data from MySQL, SFTP, and REST APIs. We land this data in the **Bronze Layer**—an immutable, raw landing zone partitioned by source and date.</p>
+                        <div class="glass-card p-6 rounded-xl border border-cyber-500/20">
+                            <h5 class="text-white text-sm font-bold mb-4">Ingestion Workflow:</h5>
+                            <ol class="space-y-3 text-xs text-slate-400 font-mono">
+                                <li>1. ADF reads **Last Watermark** from Azure SQL meta-table.</li>
+                                <li>2. ADF Copy Activity fetches only records where <code>updated_at > watermark</code>.</li>
+                                <li>3. Data lands in <code>/bronze/source_system/yyyy/mm/dd/</code> as Parquet files.</li>
+                                <li>4. ADF triggers the **Databricks Bronze Notebook** for schema validation.</li>
+                            </ol>
                         </div>
                     </section>
 
                     <!-- Module 4 -->
-                    <section id="m4" class="space-y-6">
+                    <section id="m4" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">04</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Silver: The Cleanse & Masking</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Processing (Silver & SCD)</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">The Silver layer is where the heavy lifting happens. We apply <strong>SCD Type 2</strong> for historical tracking and use our <strong>PII Masking Engine</strong> to ensure HIPAA compliance.</p>
+                        <p class="text-slate-400 leading-relaxed">The **Silver Layer** is where raw data becomes "Truth." We use PySpark to clean, deduplicate, and mask data. Crucially, we implement **SCD Type 2 (Slowly Changing Dimensions)** to track every change in a patient's record over time.</p>
                         <div class="code-snippet">
-                            # Silver Logic Example
-                            df_silver = df_bronze.withColumn("masked_email", mask_email_func(col("email")))
-                            df_silver.write.format("delta").saveAsTable("silver.patients")
+                            # SCD Type 2 Logic (Conceptual)
+                            df_new = spark.read.table("bronze.patients")
+                            df_target = spark.read.table("silver.dim_patient")
+                            
+                            # Upsert logic: Mark old records as is_active=False, Insert new with is_active=True
+                            # (See 02b_Silver_SCD2_NB.py for full code)
+                        </div>
+                        <div class="p-4 bg-green-500/10 border border-green-500/30 rounded text-xs text-green-300">
+                            <strong>HIPAA Gate:</strong> Our PII Masking Engine runs here, hashing Aadhaar numbers before they ever reach the Silver tables.
                         </div>
                     </section>
 
                     <!-- Module 5 -->
-                    <section id="m5" class="space-y-6">
+                    <section id="m5" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">05</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Gold: Business Insights</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Serving (Synapse & Gold)</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">Gold tables are designed for the business. They are usually <strong>Aggregated</strong> or <strong>Denormalized</strong> for high-performance reporting in Power BI.</p>
-                        <div class="glass-card p-6 rounded-xl border border-purple-500/20 bg-purple-500/5">
-                            <p class="text-sm text-slate-300">Example: <code>kpi_daily_summary</code> joins Patients, Lab Results, and Claims to calculate Cost-per-Patient per day.</p>
+                        <p class="text-slate-400 leading-relaxed">The **Gold Layer** contains pre-aggregated KPIs. From here, we load the data into **Azure Synapse Dedicated SQL Pool**. We use **Hash-Distribution** on high-cardinality keys (like Patient_SK) to ensure sub-second query performance on millions of rows.</p>
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[SYN]</span> Loading Gold -> Synapse Serving...</div>
+                            <div class="log-line"><span class="status-tag">[SYN]</span> Strategy: PolyBase / COPY INTO</div>
+                            <div class="log-line"><span class="status-tag">[SYN]</span> Table: fact_patient_daily_admissions (HASH DISTRIBUTED)</div>
                         </div>
                     </section>
 
                     <!-- Module 6 -->
-                    <section id="m6" class="space-y-6">
+                    <section id="m6" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">06</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Governance & PII</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Analytics (Power BI)</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">Healthcare data is sensitive. We implement <strong>Unity Catalog</strong> to manage permissions. Only authorized engineers see Bronze; Analysts only see Gold.</p>
-                        <div class="glass-card p-5 border-l-4 border-red-500 bg-red-500/5">
-                            <h6 class="text-red-400 font-bold text-xs uppercase mb-1">Critical Security Rule</h6>
-                            <p class="text-xs text-slate-400">Never store Aadhaar or Phone numbers in plain text. Use the PII Masking Engine at the earliest possible stage.</p>
+                        <p class="text-slate-400 leading-relaxed">Our **Power BI Dashboards** connect to Synapse via **DirectQuery**. This ensures that as soon as the pipeline finishes, the dashboard updates. We implement **Row-Level Security (RLS)** so that doctors in Chennai only see Chennai data, while the CMO sees everything.</p>
+                        <div class="glass-card p-6 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
+                            <h6 class="text-xs font-bold text-yellow-400 mb-2">KEY DAX MEASURE: Mortality Rate %</h6>
+                            <code>MortalityRate = DIVIDE( [Total Deaths], [Total Admissions], 0 )</code>
                         </div>
                     </section>
 
                     <!-- Module 7 -->
-                    <section id="m7" class="space-y-6">
+                    <section id="m7" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">07</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Deployment & CI/CD</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Monitoring & Alerting</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">We use <strong>Azure DevOps Pipelines</strong> to automate everything. Every code push triggers a "Secret Scan" to ensure no passwords or PII leaked into the codebase.</p>
+                        <p class="text-slate-400 leading-relaxed">We don't wait for users to report errors. **Logic Apps** are connected to our pipeline's "Failure" triggers. If a job fails, a 🚨 **Critical Alert** is sent to the Microsoft Teams channel with the exact Error ID and Run Link.</p>
+                        <div class="glass-card p-4 rounded border border-red-500/30 bg-red-900/10 flex items-start gap-4">
+                            <i data-lucide="bell" class="w-8 h-8 text-red-500 shrink-0"></i>
+                            <div>
+                                <p class="text-xs text-red-400 font-bold mb-1">AUTOMATED INCIDENT RESPONSE</p>
+                                <p class="text-[10px] text-slate-400">Our Logic App template parses the ADF Error JSON and maps it directly to a Jira ticket (INC-XXXX).</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Module 8 -->
+                    <section id="m8" class="space-y-6 border-t border-slate-800 pt-16">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl font-display font-bold text-cyber-500/20">08</span>
+                            <h3 class="text-2xl font-display font-bold text-white">CI/CD & DevOps</h3>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed">Finally, we automate the "Software" side of the project. **Azure DevOps** handles the CI/CD pipeline. Every change is tested in DEV, approved in UAT, and then "promoted" to PROD using **Release Gates**.</p>
                         <div class="init-log">
-                            <div class="log-line"><span class="status-tag">[CI]</span> Running Pytest: 12_testing/test_pii_masking.py ... PASS</div>
-                            <div class="log-line"><span class="status-tag">[CD]</span> Deploying to Databricks Workspace... OK</div>
+                            <div class="log-line"><span class="status-tag">[GIT]</span> New PR detected: "Update Silver PII Logic"</div>
+                            <div class="log-line"><span class="status-tag">[CI]</span> Running Security Scan (SecretScan)... PASS</div>
+                            <div class="log-line text-green-400"><span class="status-tag">[CD]</span> Deployment to PROD Successful.</div>
                         </div>
                     </section>
 

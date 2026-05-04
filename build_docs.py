@@ -229,6 +229,9 @@ html_template = f"""<!DOCTYPE html>
             <button onclick="switchMode('docs')" id="btn-docs" class="nav-btn h-full flex items-center gap-2 text-xs lg:text-sm font-mono font-semibold transition-all px-2">
                 <i data-lucide="terminal" class="w-4 h-4"></i> RAW.CODEBASE ({total_files})
             </button>
+            <button onclick="switchMode('masterclass')" id="btn-masterclass" class="nav-btn h-full flex items-center gap-2 text-xs lg:text-sm font-mono font-semibold transition-all px-2">
+                <i data-lucide="graduation-cap" class="w-4 h-4"></i> PROJECT.MASTERCLASS
+            </button>
         </div>
         
         <div class="hidden lg:flex items-center gap-3">
@@ -861,7 +864,136 @@ html_template = f"""<!DOCTYPE html>
     </div>
 
     <!-- ========================================== -->
-    <!-- MODE 4: DOCS HUB (Terminal Style)          -->
+    <!-- MODE 4: PROJECT MASTERCLASS (Step-by-Step) -->
+    <!-- ========================================== -->
+    <div id="view-masterclass" class="view-panel">
+        <div class="max-w-6xl mx-auto py-12 px-6">
+            <header class="mb-12 border-b border-cyber-500/30 pb-8">
+                <h2 class="text-4xl font-display font-bold text-white mb-2 tracking-tight">MediFlow<span class="text-cyber-400">360</span> Masterclass</h2>
+                <p class="text-cyber-400 font-mono text-sm uppercase tracking-widest">> THE COMPLETE GUIDE TO BUILDING AN ENTERPRISE HEALTHCARE DATA PLATFORM.</p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Navigation / Progress -->
+                <div class="lg:col-span-3 space-y-4">
+                    <div class="sticky top-8">
+                        <h4 class="text-xs font-mono text-slate-500 uppercase mb-4 tracking-tighter">Course Modules</h4>
+                        <div class="space-y-1">
+                            <a href="#m1" class="block p-3 rounded bg-cyber-500/10 border-l-2 border-cyber-400 text-white text-xs font-mono">01. THE BLUEPRINT</a>
+                            <a href="#m2" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">02. INFRASTRUCTURE (IaC)</a>
+                            <a href="#m3" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">03. BRONZE: THE LANDING</a>
+                            <a href="#m4" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">04. SILVER: THE CLEANSE</a>
+                            <a href="#m5" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">05. GOLD: THE INSIGHT</a>
+                            <a href="#m6" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">06. GOVERNANCE & PII</a>
+                            <a href="#m7" class="block p-3 rounded hover:bg-slate-800 text-slate-400 text-xs font-mono transition-colors">07. DEPLOYMENT & CI/CD</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Guide Content -->
+                <div class="lg:col-span-9 space-y-16 pb-32">
+                    
+                    <!-- Module 1 -->
+                    <section id="m1" class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl font-display font-bold text-cyber-500/20">01</span>
+                            <h3 class="text-2xl font-display font-bold text-white">The Project Blueprint</h3>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed">Before writing a single line of code, we define the <strong>Business Requirements Document (BRD)</strong>. In Healthcare, we must track every requirement back to its clinical or financial source using a <strong>Requirements Traceability Matrix (RTM)</strong>.</p>
+                        <div class="glass-card p-6 rounded-xl border border-cyber-500/20 bg-slate-900/40">
+                            <h5 class="text-cyber-400 font-mono text-xs mb-3">KEY ARTIFACTS TO CHECK:</h5>
+                            <ul class="space-y-2 text-sm text-slate-300 font-mono">
+                                <li class="flex items-center gap-2"><i data-lucide="file-check" class="w-4 h-4 text-green-400"></i> BRD_MediFlow360_v2.0.md</li>
+                                <li class="flex items-center gap-2"><i data-lucide="file-check" class="w-4 h-4 text-green-400"></i> RACI_Matrix.md</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- Module 2 -->
+                    <section id="m2" class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl font-display font-bold text-cyber-500/20">02</span>
+                            <h3 class="text-2xl font-display font-bold text-white">Infrastructure as Code (IaC)</h3>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed">Industry standard projects don't click buttons in the Azure Portal. We use <strong>Terraform</strong> or <strong>Bicep</strong> to provision resources. This ensures consistency across Dev, UAT, and Prod environments.</p>
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[TF]</span> terraform init</div>
+                            <div class="log-line"><span class="status-tag">[TF]</span> terraform apply -var="env=prod"</div>
+                            <div class="log-line text-green-400"><span class="status-tag">[TF]</span> + azurerm_storage_account.adls (CREATED)</div>
+                        </div>
+                    </section>
+
+                    <!-- Module 3 -->
+                    <section id="m3" class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl font-display font-bold text-cyber-500/20">03</span>
+                            <h3 class="text-2xl font-display font-bold text-white">Bronze: The Raw Landing Zone</h3>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed">The Bronze layer is <strong>Immutable</strong>. We ingest data exactly as it appears in the source systems. We add <strong>Metadata columns</strong> like <code>_load_timestamp</code> and <code>_run_id</code> for full lineage tracking.</p>
+                        <div class="glass-card p-4 border border-slate-700 bg-slate-900/80 rounded-lg">
+                            <p class="text-xs text-yellow-400 font-mono mb-2">// BEGINNER TIP: Never transform data in Bronze. Keep it raw to allow for easy reprocessing if logic changes.</p>
+                        </div>
+                    </section>
+
+                    <!-- Module 4 -->
+                    <section id="m4" class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl font-display font-bold text-cyber-500/20">04</span>
+                            <h3 class="text-2xl font-display font-bold text-white">Silver: The Cleanse & Masking</h3>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed">The Silver layer is where the heavy lifting happens. We apply <strong>SCD Type 2</strong> for historical tracking and use our <strong>PII Masking Engine</strong> to ensure HIPAA compliance.</p>
+                        <div class="code-snippet">
+                            # Silver Logic Example
+                            df_silver = df_bronze.withColumn("masked_email", mask_email_func(col("email")))
+                            df_silver.write.format("delta").saveAsTable("silver.patients")
+                        </div>
+                    </section>
+
+                    <!-- Module 5 -->
+                    <section id="m5" class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl font-display font-bold text-cyber-500/20">05</span>
+                            <h3 class="text-2xl font-display font-bold text-white">Gold: Business Insights</h3>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed">Gold tables are designed for the business. They are usually <strong>Aggregated</strong> or <strong>Denormalized</strong> for high-performance reporting in Power BI.</p>
+                        <div class="glass-card p-6 rounded-xl border border-purple-500/20 bg-purple-500/5">
+                            <p class="text-sm text-slate-300">Example: <code>kpi_daily_summary</code> joins Patients, Lab Results, and Claims to calculate Cost-per-Patient per day.</p>
+                        </div>
+                    </section>
+
+                    <!-- Module 6 -->
+                    <section id="m6" class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl font-display font-bold text-cyber-500/20">06</span>
+                            <h3 class="text-2xl font-display font-bold text-white">Governance & PII</h3>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed">Healthcare data is sensitive. We implement <strong>Unity Catalog</strong> to manage permissions. Only authorized engineers see Bronze; Analysts only see Gold.</p>
+                        <div class="glass-card p-5 border-l-4 border-red-500 bg-red-500/5">
+                            <h6 class="text-red-400 font-bold text-xs uppercase mb-1">Critical Security Rule</h6>
+                            <p class="text-xs text-slate-400">Never store Aadhaar or Phone numbers in plain text. Use the PII Masking Engine at the earliest possible stage.</p>
+                        </div>
+                    </section>
+
+                    <!-- Module 7 -->
+                    <section id="m7" class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl font-display font-bold text-cyber-500/20">07</span>
+                            <h3 class="text-2xl font-display font-bold text-white">Deployment & CI/CD</h3>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed">We use <strong>Azure DevOps Pipelines</strong> to automate everything. Every code push triggers a "Secret Scan" to ensure no passwords or PII leaked into the codebase.</p>
+                        <div class="init-log">
+                            <div class="log-line"><span class="status-tag">[CI]</span> Running Pytest: 12_testing/test_pii_masking.py ... PASS</div>
+                            <div class="log-line"><span class="status-tag">[CD]</span> Deploying to Databricks Workspace... OK</div>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODE 5: DOCS HUB (Terminal Style)          -->
     <!-- ========================================== -->
     <div id="view-docs" class="view-panel">
         <div style="display:flex;height:100%;width:100%;">
@@ -908,7 +1040,7 @@ html_template = f"""<!DOCTYPE html>
         let currentRawContent = "";
 
         function switchMode(mode) {{
-            const modes = ['learning','setup','office','docs'];
+            const modes = ['learning','setup','office','docs','masterclass'];
             // JavaScript-managed CSS approach: Remove relying on fragile CSS class toggling
             modes.forEach(function(m) {{
                 var v = document.getElementById('view-' + m);

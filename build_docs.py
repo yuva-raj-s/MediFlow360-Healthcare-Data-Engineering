@@ -898,17 +898,21 @@ html_template = f"""<!DOCTYPE html>
                     <section id="m1" class="space-y-6">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">01</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Blueprint & Governance</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Blueprint & Clinical Governance</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">Every professional project begins with a <strong>Project Charter</strong>. This document aligns the CIO, Finance, and the Data Team on goals, budget, and scope. In Healthcare, we must immediately define our <strong>PII/PHI Matrix</strong>—identifying which columns are sensitive (e.g., Aadhaar, MRN) before the data even enters Azure.</p>
+                        <p class="text-slate-400 leading-relaxed">In healthcare data engineering, we don't just deal with "strings" and "integers." We deal with **Clinical Standards** like **ICD-10** (Diagnosis), **CPT/HCPCS** (Procedures), and **HL7/FHIR** (Interoperability). Our blueprint must account for the complexity of these codes. A mistake in a procedure code transformation could lead to a rejected claim worth lakhs.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="glass-card p-4 rounded border border-cyber-500/10 bg-slate-900/40">
-                                <h6 class="text-xs font-bold text-cyber-400 mb-2">STEP 1: THE CHARTER</h6>
-                                <p class="text-[10px] text-slate-500">Define stakeholders, RACI (who is responsible vs consulted), and the high-level roadmap.</p>
+                                <h6 class="text-xs font-bold text-cyber-400 mb-2">PII CLASSIFICATION</h6>
+                                <p class="text-[10px] text-slate-500 leading-relaxed">We classify data into: 
+                                <br>1. **Public** (Hospital names)
+                                <br>2. **Internal** (Staff IDs)
+                                <br>3. **Confidential/PII** (Aadhaar, Phone)
+                                <br>4. **Highly Sensitive/PHI** (Diagnosis, Genetic history)</p>
                             </div>
                             <div class="glass-card p-4 rounded border border-cyber-500/10 bg-slate-900/40">
-                                <h6 class="text-xs font-bold text-cyber-400 mb-2">STEP 2: THE BRD</h6>
-                                <p class="text-[10px] text-slate-500">Document the 7 source systems, their schema, and the KPIs the business expects.</p>
+                                <h6 class="text-xs font-bold text-cyber-400 mb-2">SOURCE INVENTORY</h6>
+                                <p class="text-[10px] text-slate-500 leading-relaxed">Mapping 7 disparate systems (MySQL, Cosmos, REST) into a unified Medallion schema. This is the hardest part of the project.</p>
                             </div>
                         </div>
                     </section>
@@ -917,16 +921,16 @@ html_template = f"""<!DOCTYPE html>
                     <section id="m2" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">02</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Resource Creation (IaC)</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Enterprise IaC & Security</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">We use **Infrastructure as Code (IaC)** to provision the Azure Stack. This allows us to "replicate" the environment in minutes if a region goes down. We use **Terraform** for provider-agnosticism and **Bicep** for Azure-native speed.</p>
+                        <p class="text-slate-400 leading-relaxed">Setting up resources is about more than just `terraform apply`. We implement a **Zero-Trust Security Model**. This means:
+                        <br>1. **Private Endpoints**: Data never travels over the public internet.
+                        <br>2. **Managed Identities**: No passwords stored in ADF; resources talk to each other via Entra ID (Azure AD) tokens.
+                        <br>3. **Key Vault RBAC**: Only the ADF service principal can "get" secrets; even the developer can't see them in production.</p>
                         <div class="init-log">
-                            <div class="log-line"><span class="status-tag">[TF]</span> Provisioning Resource Group: rg-mediflow-prod</div>
-                            <div class="log-line"><span class="status-tag">[TF]</span> Provisioning ADLS Gen2: mrhsadlsprod (HNS ENABLED)</div>
-                            <div class="log-line"><span class="status-tag">[TF]</span> Provisioning Synapse Workspace... [DW500c Scaling Applied]</div>
-                        </div>
-                        <div class="p-4 bg-blue-500/10 border border-blue-500/30 rounded text-xs text-blue-300 italic">
-                            Beginner Note: "HNS Enabled" stands for Hierarchical Namespace. This is what turns a standard Storage Account into a Data Lake (ADLS Gen2).
+                            <div class="log-line"><span class="status-tag">[IAC]</span> Creating Private Link Service for ADLS...</div>
+                            <div class="log-line"><span class="status-tag">[IAC]</span> Configuring Key Vault Access Policies for Managed Identity...</div>
+                            <div class="log-line text-green-400"><span class="status-tag">[IAC]</span> Infrastructure Hardening Complete.</div>
                         </div>
                     </section>
 
@@ -934,17 +938,16 @@ html_template = f"""<!DOCTYPE html>
                     <section id="m3" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">03</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Ingestion (ADF & Bronze)</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Ingestion (Bronze & Schema Drift)</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">**Azure Data Factory (ADF)** is our orchestrator. It pulls data from MySQL, SFTP, and REST APIs. We land this data in the **Bronze Layer**—an immutable, raw landing zone partitioned by source and date.</p>
+                        <p class="text-slate-400 leading-relaxed">When ingesting from 7 sources, the source schema *will* change. We handle this using **Schema Drift** features in ADF and **mergeSchema** in Delta Lake. If a source adds a "Blood Group" column, our pipeline automatically adds it to Bronze without failing.</p>
                         <div class="glass-card p-6 rounded-xl border border-cyber-500/20">
-                            <h5 class="text-white text-sm font-bold mb-4">Ingestion Workflow:</h5>
-                            <ol class="space-y-3 text-xs text-slate-400 font-mono">
-                                <li>1. ADF reads **Last Watermark** from Azure SQL meta-table.</li>
-                                <li>2. ADF Copy Activity fetches only records where <code>updated_at > watermark</code>.</li>
-                                <li>3. Data lands in <code>/bronze/source_system/yyyy/mm/dd/</code> as Parquet files.</li>
-                                <li>4. ADF triggers the **Databricks Bronze Notebook** for schema validation.</li>
-                            </ol>
+                            <h5 class="text-white text-sm font-bold mb-4">The Watermark Strategy:</h5>
+                            <p class="text-xs text-slate-400 mb-4">To avoid re-reading 100GB every day, we use an incremental watermark. We store the <code>MAX(updated_at)</code> for every table in an Azure SQL "Control Table."</p>
+                            <div class="code-snippet">
+                                SELECT * FROM source_table 
+                                WHERE last_modified > '@{pipeline().parameters.last_watermark}'
+                            </div>
                         </div>
                     </section>
 
@@ -952,19 +955,18 @@ html_template = f"""<!DOCTYPE html>
                     <section id="m4" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">04</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Processing (Silver & SCD)</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Processing (Silver & SCD Logic)</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">The **Silver Layer** is where raw data becomes "Truth." We use PySpark to clean, deduplicate, and mask data. Crucially, we implement **SCD Type 2 (Slowly Changing Dimensions)** to track every change in a patient's record over time.</p>
-                        <div class="code-snippet">
-                            # SCD Type 2 Logic (Conceptual)
-                            df_new = spark.read.table("bronze.patients")
-                            df_target = spark.read.table("silver.dim_patient")
-                            
-                            # Upsert logic: Mark old records as is_active=False, Insert new with is_active=True
-                            # (See 02b_Silver_SCD2_NB.py for full code)
-                        </div>
-                        <div class="p-4 bg-green-500/10 border border-green-500/30 rounded text-xs text-green-300">
-                            <strong>HIPAA Gate:</strong> Our PII Masking Engine runs here, hashing Aadhaar numbers before they ever reach the Silver tables.
+                        <p class="text-slate-400 leading-relaxed">Silver is the **Source of Truth**. We use **Slowly Changing Dimensions (SCD Type 2)** to maintain a history of patient address changes, insurance plan upgrades, and physician assignments. This allows us to run "Point-in-Time" reports—seeing what the data looked like on any specific date in the past.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-slate-800/50 rounded border border-slate-700">
+                                <h6 class="text-cyber-400 text-xs font-bold mb-2">UPSERT (MERGE)</h6>
+                                <p class="text-[10px] text-slate-400">We use the <code>MERGE INTO</code> command in Delta Lake to efficiently update existing records and insert new ones in a single atomic transaction.</p>
+                            </div>
+                            <div class="p-4 bg-slate-800/50 rounded border border-slate-700">
+                                <h6 class="text-cyber-400 text-xs font-bold mb-2">VACUUM & OPTIMIZE</h6>
+                                <p class="text-[10px] text-slate-400">To prevent "Small File Problem," we run <code>OPTIMIZE</code> weekly. To save storage costs, we <code>VACUUM</code> old Delta versions after 7 days.</p>
+                            </div>
                         </div>
                     </section>
 
@@ -972,13 +974,16 @@ html_template = f"""<!DOCTYPE html>
                     <section id="m5" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">05</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Serving (Synapse & Gold)</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Serving (Synapse Performance)</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">The **Gold Layer** contains pre-aggregated KPIs. From here, we load the data into **Azure Synapse Dedicated SQL Pool**. We use **Hash-Distribution** on high-cardinality keys (like Patient_SK) to ensure sub-second query performance on millions of rows.</p>
+                        <p class="text-slate-400 leading-relaxed">Synapse is a distributed engine. To make it fly, we use **Distribution Keys**. 
+                        <br>— **Hash Distribution**: Use for Fact tables (distribute by PatientID).
+                        <br>— **Replicate Distribution**: Use for small Dimension tables (copy to every compute node).
+                        <br>— **Round Robin**: Use for staging tables where no clear join key exists.</p>
                         <div class="init-log">
-                            <div class="log-line"><span class="status-tag">[SYN]</span> Loading Gold -> Synapse Serving...</div>
-                            <div class="log-line"><span class="status-tag">[SYN]</span> Strategy: PolyBase / COPY INTO</div>
-                            <div class="log-line"><span class="status-tag">[SYN]</span> Table: fact_patient_daily_admissions (HASH DISTRIBUTED)</div>
+                            <div class="log-line"><span class="status-tag">[DB]</span> Generating Statistics for Join Columns...</div>
+                            <div class="log-line"><span class="status-tag">[DB]</span> Applying Materialized Views for Patient KPI summaries...</div>
+                            <div class="log-line text-green-400"><span class="status-tag">[DB]</span> Query Performance Optimized (Sub-second response).</div>
                         </div>
                     </section>
 
@@ -986,12 +991,12 @@ html_template = f"""<!DOCTYPE html>
                     <section id="m6" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">06</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Analytics (Power BI)</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Analytics (Power BI Depth)</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">Our **Power BI Dashboards** connect to Synapse via **DirectQuery**. This ensures that as soon as the pipeline finishes, the dashboard updates. We implement **Row-Level Security (RLS)** so that doctors in Chennai only see Chennai data, while the CMO sees everything.</p>
+                        <p class="text-slate-400 leading-relaxed">A good dashboard is 50% visuals and 50% **DAX performance**. We use **DirectQuery** with **Aggregations**. This means simple charts use a fast "Import" summary, while deep drill-throughs trigger a live SQL query to Synapse. This gives the best of both worlds: speed and real-time detail.</p>
                         <div class="glass-card p-6 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
-                            <h6 class="text-xs font-bold text-yellow-400 mb-2">KEY DAX MEASURE: Mortality Rate %</h6>
-                            <code>MortalityRate = DIVIDE( [Total Deaths], [Total Admissions], 0 )</code>
+                            <h6 class="text-xs font-bold text-yellow-400 mb-2">ADVANCED DAX: LFL Growth</h6>
+                            <code>LFL_Growth = DIVIDE([Current Admissions] - [Prev Year Admissions], [Prev Year Admissions])</code>
                         </div>
                     </section>
 
@@ -999,15 +1004,13 @@ html_template = f"""<!DOCTYPE html>
                     <section id="m7" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">07</span>
-                            <h3 class="text-2xl font-display font-bold text-white">Monitoring & Alerting</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">Monitoring & KQL Logs</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">We don't wait for users to report errors. **Logic Apps** are connected to our pipeline's "Failure" triggers. If a job fails, a 🚨 **Critical Alert** is sent to the Microsoft Teams channel with the exact Error ID and Run Link.</p>
-                        <div class="glass-card p-4 rounded border border-red-500/30 bg-red-900/10 flex items-start gap-4">
-                            <i data-lucide="bell" class="w-8 h-8 text-red-500 shrink-0"></i>
-                            <div>
-                                <p class="text-xs text-red-400 font-bold mb-1">AUTOMATED INCIDENT RESPONSE</p>
-                                <p class="text-[10px] text-slate-400">Our Logic App template parses the ADF Error JSON and maps it directly to a Jira ticket (INC-XXXX).</p>
-                            </div>
+                        <p class="text-slate-400 leading-relaxed">We pipe all ADF and Databricks logs to **Log Analytics**. Using **Kusto Query Language (KQL)**, we create custom dashboards that track "Data Freshness"—telling us if any table hasn't been updated in 24 hours. We also monitor **Databricks Cluster Utilization** to downscale and save costs during idle night hours.</p>
+                        <div class="code-snippet">
+                            # KQL Example: Find Failed Pipeline Runs
+                            ADFPipelineRun | where Status == "Failed" 
+                            | project PipelineName, Start, ErrorMessage
                         </div>
                     </section>
 
@@ -1015,13 +1018,16 @@ html_template = f"""<!DOCTYPE html>
                     <section id="m8" class="space-y-6 border-t border-slate-800 pt-16">
                         <div class="flex items-center gap-4">
                             <span class="text-4xl font-display font-bold text-cyber-500/20">08</span>
-                            <h3 class="text-2xl font-display font-bold text-white">CI/CD & DevOps</h3>
+                            <h3 class="text-2xl font-display font-bold text-white">DevOps & Release Gates</h3>
                         </div>
-                        <p class="text-slate-400 leading-relaxed">Finally, we automate the "Software" side of the project. **Azure DevOps** handles the CI/CD pipeline. Every change is tested in DEV, approved in UAT, and then "promoted" to PROD using **Release Gates**.</p>
+                        <p class="text-slate-400 leading-relaxed">In an enterprise setting, we never "Publish" directly from the ADF UI to PROD. We use **Release Gates**. Before code moves to PROD:
+                        <br>1. **Unit Tests** must pass in Databricks.
+                        <br>2. **Data Quality (DQ) Validation** must confirm zero nulls in Primary Keys.
+                        <br>3. **Security Approval**: A scan confirms no raw Aadhaar numbers exist in the Silver layer.</p>
                         <div class="init-log">
-                            <div class="log-line"><span class="status-tag">[GIT]</span> New PR detected: "Update Silver PII Logic"</div>
-                            <div class="log-line"><span class="status-tag">[CI]</span> Running Security Scan (SecretScan)... PASS</div>
-                            <div class="log-line text-green-400"><span class="status-tag">[CD]</span> Deployment to PROD Successful.</div>
+                            <div class="log-line"><span class="status-tag">[GATE]</span> Waiting for QA Approval... OK</div>
+                            <div class="log-line"><span class="status-tag">[GATE]</span> Checking DQ Scorecard... [Score: 99.8%] OK</div>
+                            <div class="log-line text-green-400"><span class="status-tag">[GATE]</span> Promotion to PRODUCTION Authorized.</div>
                         </div>
                     </section>
 

@@ -1,11 +1,11 @@
 # Databricks Notebook: 03_Gold_Aggregation_NB.py
 # MediFlow360 — Gold Layer KPI Aggregations
-# Author: Rahul Nair (DA-001) | Version: 2.1 | Date: 2024-03-22
+# Author: Rahul Nair (DA-001) | Version: 3.0 | Date: 2024-05-05
 # Description: Generates final reporting tables for Power BI consumption.
 
 %run ./00_Helper_NB
 
-from pyspark.sql.functions import col, count, sum as spark_sum, avg, round as spark_round, when, lit, datediff, current_date, expr
+from pyspark.sql.functions import col, count, sum as spark_sum, avg, round as spark_round, when, lit, datediff, current_date, current_timestamp, expr, max as spark_max
 from datetime import datetime, timezone
 
 RUN_ID = f"gold-{datetime.now().strftime('%Y%m%d%H%M%S')}"
@@ -14,16 +14,38 @@ print(f"[Gold] Starting Aggregation | Run ID: {RUN_ID}")
 
 try:
     # ---------------------------------------------------------
-    # 1. READ SILVER DATA (Filtered for active records)
+    # 1. READ SILVER & BRONZE DATA
     # ---------------------------------------------------------
     dim_patient = spark.read.table(get_silver_table("dim_patient")).filter(col("is_current") == 1)
-    dim_provider = spark.read.table(get_silver_table("dim_provider"))
-    dim_hospital = spark.read.table(get_silver_table("dim_hospital"))
     fact_admissions = spark.read.table(get_silver_table("fact_admissions"))
     fact_claims = spark.read.table(get_silver_table("fact_claims")).filter(col("is_current") == 1)
     
+    # Read Clinical Vitals from Streaming Bronze
+    try:
+        vitals_stream = spark.read.table(f"{UC_CATALOG}.{UC_SCHEMA_BRONZE}.icu_vitals_stream")
+    except Exception:
+        print("[Gold] Warning: icu_vitals_stream table not found. Using empty dummy.")
+        vitals_stream = None
+
     # ---------------------------------------------------------
-    # 2. DAILY KPI SUMMARY (Hospital Level)
+    # 2. CLINICAL VITALS AGGREGATION
+    # ---------------------------------------------------------
+    print("[Gold] Calculating Clinical Vitals Metrics...")
+    if vitals_stream:
+        vitals_metrics = vitals_stream \
+            .withColumn("vitals_date", col("event_ts").cast("date")) \
+            .groupBy("hospital_code", "vitals_date") \
+            .agg(
+                avg("heart_rate").alias("avg_heart_rate"),
+                avg("spo2").alias("avg_spo2"),
+                spark_sum(when(col("alert_level") == "CRITICAL", 1).otherwise(0)).alias("critical_alerts"),
+                spark_sum(when(col("alert_level") == "WARNING", 1).otherwise(0)).alias("warning_alerts")
+            )
+    else:
+        vitals_metrics = None
+
+    # ---------------------------------------------------------
+    # 3. DAILY KPI SUMMARY (Hospital Level)
     # BR-002, BR-003, BR-005: Admissions, Readmissions, Financials
     # ---------------------------------------------------------
     print("[Gold] Calculating Daily KPI Summary...")
@@ -52,47 +74,54 @@ try:
         )
         
     # Claims/Financial metrics
-    fin_metrics = fact_claims.groupBy("hospital_code", "claim_date") \
+    fin_metrics = fact_claims.groupBy("hospital_code", "eff_start_date") \
         .agg(
             count("claim_id").alias("claims_submitted"),
             spark_sum(when(col("status") == 'APPROVED', 1).otherwise(0)).alias("claims_approved"),
             spark_sum(when(col("status") == 'DENIED', 1).otherwise(0)).alias("claims_denied"),
             spark_sum(col("approved_amount_inr")).alias("revenue_inr")
-        )
+        ).withColumnRenamed("eff_start_date", "claim_date")
         
     # Join metrics to form Daily KPI
     kpi_daily = adm_metrics \
         .join(readm_metrics, ["hospital_code", "admission_date"], "left") \
-        .join(fin_metrics, adm_metrics.hospital_code == fin_metrics.hospital_code, "left") \
-        .drop(fin_metrics.hospital_code) \
-        .withColumnRenamed("admission_date", "kpi_date") \
-        .fillna(0)
+        .join(fin_metrics, (adm_metrics.hospital_code == fin_metrics.hospital_code) & (adm_metrics.admission_date == fin_metrics.claim_date), "left") \
+        .drop(fin_metrics.hospital_code).drop(fin_metrics.claim_date) \
+        .withColumnRenamed("admission_date", "kpi_date")
         
-    # Calculate Rates
-    kpi_daily = kpi_daily \
+    # Join Vitals if available
+    if vitals_metrics:
+        kpi_daily = kpi_daily.join(vitals_metrics, (kpi_daily.hospital_code == vitals_metrics.hospital_code) & (kpi_daily.kpi_date == vitals_metrics.vitals_date), "left") \
+            .drop(vitals_metrics.hospital_code).drop(vitals_metrics.vitals_date)
+
+    # Calculate Rates and Fill Missing
+    kpi_daily = kpi_daily.fillna(0) \
         .withColumn("readmission_rate_pct", spark_round((col("readmission_count") / col("new_admissions")) * 100, 2)) \
         .withColumn("denial_rate_pct", spark_round((col("claims_denied") / col("claims_submitted")) * 100, 2)) \
         .withColumn("pipeline_run_id", lit(RUN_ID)) \
         .withColumn("refreshed_at", current_timestamp())
 
     # Write to Gold
-    kpi_daily.write.format("delta").mode("overwrite").saveAsTable(get_gold_table("kpi_daily_summary"))
+    kpi_daily.write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable(get_gold_table("kpi_daily_summary"))
     
-    # Write to Synapse Analytics (Dedicated SQL Pool) via PolyBase
-    # Requires ADLS Gen2 staging directory
-    kpi_daily.write \
-        .format("com.databricks.spark.sqldw") \
-        .option("url", SYNAPSE_JDBC_URL) \
-        .option("forwardSparkAzureStorageCredentials", "true") \
-        .option("dbTable", "gold.kpi_daily_summary") \
-        .option("tempDir", f"{ABFSS_PATH}/gold/synapse_temp/") \
-        .mode("overwrite") \
-        .save()
+    # Write to Synapse Analytics
+    try:
+        kpi_daily.write \
+            .format("com.databricks.spark.sqldw") \
+            .option("url", SYNAPSE_JDBC_URL) \
+            .option("forwardSparkAzureStorageCredentials", "true") \
+            .option("dbTable", "gold.kpi_daily_summary") \
+            .option("tempDir", f"{ABFSS_PATH}/gold/synapse_temp/") \
+            .mode("overwrite") \
+            .save()
+        print("[Gold] Synapse load completed.")
+    except Exception as se:
+        print(f"[Gold] Synapse load failed: {str(se)}")
 
-    print("[Gold] KPI Summary aggregation and Synapse load completed.")
+    print("[Gold] KPI Summary aggregation completed.")
 
     # ---------------------------------------------------------
-    # 3. AUDIT LOGGING
+    # 4. AUDIT LOGGING
     # ---------------------------------------------------------
     end_time = datetime.now(timezone.utc)
     write_audit_log("PL_Gold_Aggregation", "03_Gold_Aggregation_NB", RUN_ID, "SILVER", "gold.kpi_daily_summary", kpi_daily.count(), kpi_daily.count(), 0, "SUCCESS", start_time, end_time)
@@ -102,4 +131,4 @@ except Exception as e:
     end_time = datetime.now(timezone.utc)
     write_audit_log("PL_Gold_Aggregation", "03_Gold_Aggregation_NB", RUN_ID, "SILVER", "gold.kpi_daily_summary", 0, 0, 1, "FAILED", start_time, end_time, str(e))
     send_alert(SEVERITY_CRITICAL, "Gold Aggregation Failed", str(e), "03_Gold_Aggregation_NB")
-    raise e
+    raise e

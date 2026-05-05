@@ -1,6 +1,7 @@
 # Databricks Notebook: 05_Data_Quality_NB.py
 # MediFlow360 — Data Quality & Governance Gating
-# Author: Priya Sharma (DE-001) | Version: 3.0
+# Author: Priya Sharma (DE-001) | Version: 3.1
+# Last Updated: 2024-05-05
 
 %run ./00_Helper_NB
 
@@ -37,7 +38,6 @@ def run_dq_checks():
         print(f"[DQ] Skipping Rule 2 (Tables might not exist yet): {str(e)}")
 
     # 3. PII Exposure Check (INC-003 Prevention)
-    # Scan Gold layer schemas to ensure no column contains 'aadhaar', 'ssn', 'phone' unless explicitly masked
     print("[DQ] Running Rule 3: DPDP PII Scan on Gold Layer")
     forbidden_terms = ["aadhaar_number", "ssn", "credit_card", "phone_number"]
     try:
@@ -48,10 +48,28 @@ def run_dq_checks():
                 msg = f"Rule 3 Failed: PII Column '{term}' detected in Gold layer!"
                 dq_errors.append(msg)
                 send_alert(SEVERITY_CRITICAL, "DPDP VIOLATION: PII Leak", msg, "05_Data_Quality_NB")
-                # Hard fail to prevent downstream ingestion
                 raise Exception(msg)
     except Exception as e:
-        pass # Ignored if table doesn't exist yet
+        pass
+
+    # 4. Clinical Signal Integrity (NEW v3.1)
+    print("[DQ] Running Rule 4: Clinical Signal Integrity (Streaming Vitals)")
+    try:
+        vitals = spark.read.table(f"{UC_CATALOG}.{UC_SCHEMA_BRONZE}.icu_vitals_stream") \
+            .filter(col("_load_timestamp") >= expr("current_timestamp() - interval 1 hour"))
+        
+        # Check for extreme impossible values (noise)
+        impossible_vitals = vitals.filter(
+            (col("heart_rate") < 10) | (col("heart_rate") > 400) |
+            (col("spo2") < 20.0) | (col("temperature_c") < 25.0)
+        ).count()
+
+        if impossible_vitals > 0:
+            msg = f"Rule 4 Failed: {impossible_vitals} records with physically impossible vital signs detected in the last hour."
+            dq_errors.append(msg)
+            send_alert(SEVERITY_WARNING, "Clinical Data Noise Detected", msg, "05_Data_Quality_NB")
+    except Exception as e:
+        print(f"[DQ] Skipping Rule 4: {str(e)}")
         
     return dq_errors
 
@@ -61,4 +79,4 @@ if errors:
     for e in errors:
         print(f" - {e}")
 else:
-    print("[DQ] All Data Quality checks passed successfully.")
+    print("[DQ] All Data Quality checks passed successfully.")

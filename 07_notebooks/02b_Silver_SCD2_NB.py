@@ -1,16 +1,20 @@
 # Databricks Notebook: 02b_Silver_SCD2_NB.py
 # MediFlow360 — SCD Type 2: Full History Tracking
 # Author: Kavitha Rajan (DE-003) | Reviewed: Priya Sharma (DE-001)
-# Version: 1.4 | Last Updated: 2024-03-12
+# Version: 1.5 | Last Updated: 2024-05-05
 #
 # ⚠️  INC-005 FIX: Watermark tracked on BRONZE _load_timestamp, NOT silver updated_at
 #     See: 15_incidents_and_struggles/INC-005_SCD2_Broke_Incremental.md
 
 %run ./00_Helper_NB
 
-from pyspark.sql.functions import sha2, concat_ws, current_date, col, lit
+from pyspark.sql.functions import sha2, concat_ws, current_date, col, lit, current_timestamp, expr
 from pyspark.sql.types import StringType
 from datetime import datetime, timezone
+
+# Widgets
+dbutils.widgets.text("INGESTION_MODE", "batch")
+INGESTION_MODE = dbutils.widgets.get("INGESTION_MODE").lower()
 
 RUN_ID = f"scd2-{datetime.now().strftime('%Y%m%d%H%M%S')}"
 start_time = datetime.now(timezone.utc)
@@ -21,9 +25,9 @@ PATIENT_NK = "global_patient_id"
 
 def apply_scd2_patients():
     """SCD-2 for dim_patient: expire old row, insert new version on attribute change."""
-    print("[SCD2] Processing dim_patient...")
+    print(f"[SCD2] Processing dim_patient (Mode: {INGESTION_MODE})...")
 
-    # Read today's Bronze delta (INC-005 fix: filter by Bronze _load_date)
+    # Patients (S1) is currently batch-only, but we'll respect the filter
     incoming = spark.read.parquet(get_bronze_path("s1_patients")) \
         .filter(col("_load_date") == current_date()) \
         .dropDuplicates([PATIENT_NK])
@@ -90,11 +94,18 @@ def apply_scd2_patients():
 
 def apply_scd2_claims_status():
     """SCD-2 for fact_claims: each status transition creates a new history row."""
-    print("[SCD2] Processing fact_claims status history...")
+    print(f"[SCD2] Processing fact_claims status history (Mode: {INGESTION_MODE})...")
 
-    bronze_claims = spark.read.parquet(get_bronze_path("s2_claims")) \
-        .filter(col("_load_date") == current_date()) \
-        .dropDuplicates(["claim_id", "status"])
+    if INGESTION_MODE == "streaming":
+        # Read from Streaming Bronze Delta table
+        bronze_claims = spark.read.table(f"{UC_CATALOG}.{UC_SCHEMA_BRONZE}.claims_stream") \
+            .filter(col("_load_timestamp") >= expr("current_timestamp() - interval 1 day")) # Adaptive lookback
+    else:
+        # Read from Batch Bronze Parquet files
+        bronze_claims = spark.read.parquet(get_bronze_path("s2_claims")) \
+            .filter(col("_load_date") == current_date())
+
+    bronze_claims = bronze_claims.dropDuplicates(["claim_id", "status"])
 
     if bronze_claims.count() == 0:
         return 0
@@ -121,6 +132,50 @@ def apply_scd2_claims_status():
     return count
 
 
+def apply_scd2_pharmacy_inventory():
+    """SCD-2 for dim_pharmacy_inventory: merging logical CDC events from Kafka."""
+    print(f"[SCD2] Processing dim_pharmacy_inventory (Mode: {INGESTION_MODE})...")
+
+    if INGESTION_MODE == "streaming":
+        bronze_cdc = spark.read.table(f"{UC_CATALOG}.{UC_SCHEMA_BRONZE}.pharmacy_cdc_stream")
+    else:
+        # Batch fallback if needed
+        print("[SCD2] Pharmacy CDC is streaming only. Skipping batch run.")
+        return 0
+
+    # Process only 'u' (update) and 'c' (create) events
+    # We ignore 'd' (delete) for SCD-2 history preservation or handle as 'is_deleted' flag
+    incoming = bronze_cdc.filter(col("op").isin(["u", "c"])) \
+        .select("item_id", "hospital_code", "stock_count", "reorder_level", "last_updated_at")
+
+    if incoming.count() == 0:
+        return 0
+
+    silver_table = get_silver_table("dim_pharmacy_inventory")
+    
+    # Check if table exists
+    try:
+        spark.read.table(silver_table)
+    except Exception:
+        # Initialize table
+        incoming.withColumn("eff_start_date", current_date()) \
+                .withColumn("eff_end_date", lit(None).cast("date")) \
+                .withColumn("is_current", lit(1)) \
+                .withColumn("created_by_run_id", lit(RUN_ID)) \
+                .write.format("delta").saveAsTable(silver_table)
+        return incoming.count()
+
+    # Append new versions
+    incoming.withColumn("eff_start_date", current_date()) \
+            .withColumn("eff_end_date", lit(None).cast("date")) \
+            .withColumn("is_current", lit(1)) \
+            .withColumn("created_by_run_id", lit(RUN_ID)) \
+            .write.format("delta").mode("append").saveAsTable(silver_table)
+
+    print(f"[SCD2] dim_pharmacy_inventory: {incoming.count()} CDC updates processed.")
+    return incoming.count()
+
+
 # MAIN
 errors = []
 total = 0
@@ -139,10 +194,18 @@ except Exception as ex:
     errors.append(str(ex))
     send_alert(SEVERITY_WARNING, "SCD2 Claims Failed", str(ex), "Silver_SCD2_NB")
 
+try:
+    ph = apply_scd2_pharmacy_inventory()
+    total += ph
+except Exception as ex:
+    errors.append(str(ex))
+    send_alert(SEVERITY_WARNING, "SCD2 Pharmacy CDC Failed", str(ex), "Silver_SCD2_NB")
+
 end_time = datetime.now(timezone.utc)
 write_audit_log("PL_Silver_Transform", "02b_Silver_SCD2_NB", RUN_ID,
-    "SILVER", "dim_patient,fact_claims", total, total, len(errors),
+    "SILVER", "dim_patient,fact_claims,dim_pharmacy_inventory", total, total, len(errors),
     "FAILED" if errors else "SUCCESS", start_time, end_time,
     "; ".join(errors) if errors else None)
 
 print(f"[SCD2] ✅ Done. Total records: {total}")
+

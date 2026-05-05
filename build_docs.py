@@ -275,59 +275,63 @@ html_template = f"""<!DOCTYPE html>
                 <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#00f0ff 1px, transparent 1px), linear-gradient(90deg, #00f0ff 1px, transparent 1px); background-size: 30px 30px;"></div>
                 
                 <svg width="100%" height="100%" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 z-0 overflow-visible">
-                    <!-- BATCH FLOWS: Sources to ADF (X:400, Y:300) -->
+                    <!-- Source to ADF (Batch) -->
                     <path class="data-pipe" d="M 150 60 C 250 60, 250 300, 400 300" /> <!-- S1 -->
                     <path class="data-pipe" d="M 150 216 C 250 216, 250 300, 400 300" /> <!-- S3 -->
                     <path class="data-pipe" d="M 150 300 L 400 300" /> <!-- S4 -->
                     <path class="data-pipe" d="M 150 462 C 250 462, 250 300, 400 300" /> <!-- S6 -->
 
-                    <!-- STREAMING FLOWS: Sources to KAFKA (X:400, Y:450) -->
+                    <!-- Source to KAFKA (Streaming) -->
                     <path class="data-pipe" stroke="#fb923c" d="M 150 138 C 250 138, 250 450, 400 450" /> <!-- S2 -->
                     <path class="data-pipe" stroke="#fb923c" d="M 150 384 C 250 384, 250 450, 400 450" /> <!-- S5 -->
                     <path class="data-pipe" stroke="#fb923c" d="M 150 540 C 250 540, 250 450, 400 450" /> <!-- S7 -->
 
-                    <!-- ORCHESTRATION: Airflow to ADF -->
-                    <path class="data-pipe" stroke="#34d399" stroke-dasharray="5,5" d="M 400 150 L 400 300" />
+                    <!-- ADF to Processing -->
+                    <path class="data-pipe" d="M 400 300 L 600 150" />
+                    <path class="data-pipe" d="M 600 150 L 800 150" />
+                    <path class="data-pipe" d="M 800 150 C 700 300, 700 300, 600 300" />
+                    <path class="data-pipe" d="M 600 300 L 800 300" />
+                    <path class="data-pipe" d="M 800 300 C 700 450, 700 450, 600 450" />
+                    <path class="data-pipe" d="M 600 450 L 800 450" />
 
-                    <!-- PROCESSING LINKS -->
-                    <path class="data-pipe" d="M 400 300 L 600 150" /> <!-- ADF to UC Bronze -->
-                    <path class="data-pipe" d="M 600 150 L 800 150" /> <!-- UC Bronze to DBX Bronze -->
-                    <path class="data-pipe" d="M 400 450 C 600 450, 700 150, 800 150" /> <!-- Kafka to DBX Bronze (Real-time) -->
-                    
-                    <path class="data-pipe" d="M 800 150 L 800 300" /> <!-- Bronze to Silver -->
-                    <path class="data-pipe" d="M 800 300 L 800 450" /> <!-- Silver to Gold -->
+                    <!-- Orchestration & Streaming Links -->
+                    <path class="data-pipe" stroke="#34d399" d="M 400 150 L 400 300" /> <!-- Airflow to ADF -->
+                    <path class="data-pipe" stroke="#fb923c" d="M 400 450 C 600 450, 700 150, 800 150" /> <!-- Kafka to DBX Bronze -->
 
-                    <!-- SERVING & PRESENTATION -->
+                    <!-- Serving & Presentation -->
                     <path class="data-pipe" d="M 800 450 C 950 450, 950 228, 1050 228" />
                     <path class="data-pipe" d="M 1050 228 L 1050 90" />
                     <path class="data-pipe" d="M 800 300 C 950 300, 950 372, 1050 372" />
 
-                    <!-- ALERTING PATHS -->
-                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 400 300 C 500 550, 900 550, 1050 510" />
-                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 450 C 900 450, 1000 500, 1050 510" />
+                    <!-- ALERTING PATHS (Centralized Monitoring) -->
+                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 400 300 C 500 550, 900 550, 1050 510" /> <!-- ADF to Logic App -->
+                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 150 C 900 150, 1000 500, 1050 510" /> <!-- Bronze to Logic App -->
+                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 300 C 900 300, 1000 500, 1050 510" /> <!-- Silver to Logic App -->
+                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 450 C 900 450, 1000 500, 1050 510" /> <!-- Gold to Logic App -->
 
-                    <!-- ANIMATED FLOWS (CIRCUIT) -->
-                    <!-- Batch Flow -->
                     <path class="data-flow" d="M 150 60 C 250 60, 250 300, 400 300" />
-                    <path class="data-flow" d="M 150 216 C 250 216, 250 300, 400 300" style="animation-delay: -0.5s;" />
-                    <path class="data-flow" d="M 400 300 L 600 150" style="animation-delay: -1s;" />
-                    <path class="data-flow" d="M 600 150 L 800 150" style="animation-delay: -1.5s;" />
+                    <path class="data-flow" d="M 150 216 C 250 216, 250 300, 400 300" style="animation-delay: -0.6s;" />
+                    <path class="data-flow" d="M 150 300 L 400 300" style="animation-delay: -0.9s;" />
+                    <path class="data-flow" d="M 150 462 C 250 462, 250 300, 400 300" style="animation-delay: -1.5s;" />
 
-                    <!-- Streaming Flow -->
                     <path class="data-flow" stroke="#fb923c" d="M 150 138 C 250 138, 250 450, 400 450" />
                     <path class="data-flow" stroke="#fb923c" d="M 150 540 C 250 540, 250 450, 400 450" style="animation-delay: -0.8s;" />
-                    <path class="data-flow" stroke="#fb923c" d="M 400 450 C 600 450, 700 150, 800 150" style="animation-delay: -1.2s;" />
+                    
+                    <path class="data-flow" stroke="#34d399" d="M 400 150 L 400 300" />
+                    <path class="data-flow" stroke="#fb923c" d="M 400 450 C 600 450, 700 150, 800 150" />
 
-                    <!-- Core Pipeline Flow -->
-                    <path class="data-flow" d="M 800 150 L 800 300" style="animation-delay: -2s;" />
-                    <path class="data-flow" d="M 800 300 L 800 450" style="animation-delay: -2.5s;" />
-                    <path class="data-flow" d="M 800 450 C 950 450, 950 228, 1050 228" style="animation-delay: -3s;" />
-
-                    <!-- Orchestration Heartbeat -->
-                    <path class="data-flow" stroke="#34d399" d="M 400 150 L 400 300" style="animation-duration: 2s; stroke-dasharray: 4, 10;" />
-
-                    <!-- Alerts -->
-                    <path class="data-flow-alert" d="M 800 450 C 900 450, 1000 500, 1050 510" />
+                    <path class="data-flow" d="M 400 300 L 600 150" />
+                    <path class="data-flow" d="M 600 150 L 800 150" />
+                    <path class="data-flow" d="M 800 150 C 700 300, 700 300, 600 300" />
+                    <path class="data-flow" d="M 600 300 L 800 300" />
+                    <path class="data-flow" d="M 800 300 C 700 450, 700 450, 600 450" />
+                    <path class="data-flow" d="M 600 450 L 800 450" />
+                    <path class="data-flow" d="M 800 450 C 950 450, 950 228, 1050 228" />
+                    <path class="data-flow" d="M 1050 228 L 1050 90" />
+                    <path class="data-flow" d="M 800 300 C 950 300, 950 372, 1050 372" />
+                    <path class="data-flow-alert" d="M 400 300 C 500 550, 900 550, 1050 510" /> 
+                    <path class="data-flow-alert" d="M 800 150 C 900 150, 1000 500, 1050 510" style="animation-delay: -0.5s;" />
+                    <path class="data-flow-alert" d="M 800 300 C 900 300, 1000 500, 1050 510" style="animation-delay: -1s;" />
                 </svg>
 
                 <div class="tech-node" style="left: 12.5%; top: 10%; padding: 8px; width: 140px;" onclick="openDoc('03_data_dictionary', 'Source_to_Bronze_Mapping.md')">

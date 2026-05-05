@@ -1,0 +1,80 @@
+{
+  "airflow_connections": [
+    {
+      "conn_id": "databricks_default",
+      "conn_type": "http",
+      "description": "Databricks workspace for MediFlow360 notebooks and jobs",
+      "host": "https://adb-XXXXXXXX.azuredatabricks.net",
+      "port": 443,
+      "password": "<DATABRICKS_PAT_TOKEN>",
+      "extra": {
+        "token": "<DATABRICKS_PAT_TOKEN>",
+        "host": "https://adb-XXXXXXXX.azuredatabricks.net"
+      }
+    },
+    {
+      "conn_id": "azure_data_factory",
+      "conn_type": "http",
+      "description": "Azure Data Factory REST API via Service Principal",
+      "host": "management.azure.com",
+      "login": "<SERVICE_PRINCIPAL_CLIENT_ID>",
+      "password": "<SERVICE_PRINCIPAL_CLIENT_SECRET>",
+      "extra": {
+        "tenant_id": "<AZURE_TENANT_ID>",
+        "subscription_id": "<AZURE_SUBSCRIPTION_ID>",
+        "resource_group": "mrhs-rg-prod",
+        "factory_name": "mrhs-adf-prod"
+      }
+    },
+    {
+      "conn_id": "azure_sql_mediflow",
+      "conn_type": "mssql",
+      "description": "Azure SQL Database for watermark_control and pipeline_audit_log",
+      "host": "mrhs-sqldb-prod.database.windows.net",
+      "port": 1433,
+      "schema": "MediFlow360",
+      "login": "adf_reader",
+      "password": "<AZURE_SQL_PASSWORD>"
+    },
+    {
+      "conn_id": "teams_webhook",
+      "conn_type": "http",
+      "description": "Microsoft Teams Incoming Webhook for MediFlow360 alerts",
+      "host": "https://mrhs.webhook.office.com/webhookb2/XXXXXXXX@XXXXXXXX/IncomingWebhook/XXXXXXXX/XXXXXXXX",
+      "port": 443
+    },
+    {
+      "conn_id": "kafka_default",
+      "conn_type": "kafka",
+      "description": "Azure Event Hubs Kafka-compatible endpoint",
+      "host": "mrhs-eventhubs-prod.servicebus.windows.net",
+      "port": 9093,
+      "extra": {
+        "security_protocol": "SASL_SSL",
+        "sasl_mechanism": "PLAIN",
+        "sasl_username": "$ConnectionString",
+        "sasl_password": "<EVENT_HUB_CONNECTION_STRING>"
+      }
+    },
+    {
+      "conn_id": "adls_gen2",
+      "conn_type": "wasb",
+      "description": "Azure Data Lake Storage Gen2 for Bronze/Silver/Gold layers",
+      "host": "mrhsadlsprod.dfs.core.windows.net",
+      "extra": {
+        "account_name": "mrhsadlsprod",
+        "tenant_id": "<AZURE_TENANT_ID>",
+        "client_id": "<DATABRICKS_SP_CLIENT_ID>",
+        "client_secret": "<DATABRICKS_SP_CLIENT_SECRET>"
+      }
+    }
+  ],
+  "airflow_variables": {
+    "databricks_silver_cluster_id": "0401-XXXXXX-XXXXXXXX",
+    "databricks_gold_cluster_id":   "0401-XXXXXX-YYYYYYYY",
+    "databricks_bronze_cluster_id": "0401-XXXXXX-ZZZZZZZZ",
+    "mediflow360_env":              "production",
+    "kafka_lag_alert_threshold":    "500"
+  },
+  "notes": "Replace all <PLACEHOLDER> values with actual secrets from Azure Key Vault. Never commit real credentials."
+}

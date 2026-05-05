@@ -14,38 +14,48 @@
 | **Target Go-Live** | July 31, 2024 |
 | **Azure Region** | South India (Chennai) |
 | **Scale** | Petabyte-scale (Synapse Analytics Serving) |
-| **Status** | 🟢 In Progress (Sprint 3) |
+| **Status** | 🟢 In Progress (Sprint 4 — Kafka + Airflow) |
 
 ---
 
-## 🏗️ Enterprise Architecture Summary
-
-The platform utilizes a modern Azure Data Stack, carefully orchestrated to ensure compliance (DPDP Act), high availability (99.9%), and sub-second analytical queries.
+## 🏗️ Enterprise Architecture Summary (v3.0 — Kafka + Airflow)
 
 ```text
-[7 Heterogeneous Source Systems] 
- (MySQL, REST API, SFTP, CosmosDB, PostgreSQL CDC, SharePoint, IoT Hub)
-         ↓
-[Azure Data Factory (ADF) Orchestration]
-         ↓
-[ADLS Gen2: Bronze Layer] (Raw, Immutable, Partitioned)
-         ↓
-[Databricks: Silver Layer] (Unity Catalog, PII Masking Engine, SCD Type 2)
-         ↓
-[Databricks: Gold Layer] (Aggregated KPIs, Governance Automation)
-         ↓
-[Azure Synapse Analytics: Dedicated SQL Pool] (Enterprise Serving Layer)
-         ↓
-[Power BI & Logic Apps] (Executive Dashboards & Clinical Alerts)
+┌──────────────────── SOURCE SYSTEMS ───────────────────────────────────────┐
+│  [BATCH]                           [REAL-TIME STREAMING]                   │
+│  S1 MySQL Patients                 S7 ICU Monitors ──→ mrhs.icu.vitals     │
+│  S3 SFTP Lab CSVs                  S2 Claims API   ──→ mrhs.insurance.claims│
+│  S4 CosmosDB Appointments          S5 Pharmacy CDC ──→ mrhs.pharmacy.cdc   │
+│  S6 SharePoint HR                                                          │
+└──────────────┬─────────────────────────────┬──────────────────────────────┘
+               │ ADF (SHIR + Watermark)       │ Azure Event Hubs (Kafka endpoint)
+               ▼                              ▼
+┌──────────────────── ORCHESTRATION: Apache Airflow (Astronomer/AKS) ───────┐
+│  bronze_batch_ingestion  │  kafka_stream_monitor  │  silver/gold DAGs      │
+└──────────────┬───────────────────────────────────────────────┬────────────┘
+               ▼                                               ▼
+┌────────────────── BRONZE LAYER (ADLS Gen2) ───────────────────────────────┐
+│   Batch: patients, lab_results, appointments, staff_roster                 │
+│   Streaming: icu_vitals_stream, claims_stream, pharmacy_inventory_stream   │
+└────────────────────────────────┬──────────────────────────────────────────┘
+                                 ▼
+┌────────────── DATABRICKS SILVER (Unity Catalog + PII Engine) ─────────────┐
+│   SCD Type-2  |  Anomaly Detection  |  DQ Gate  |  PII Masking             │
+└────────────────────────────────┬──────────────────────────────────────────┘
+                                 ▼
+┌────────────── DATABRICKS GOLD (KPI Aggregation) ──────────────────────────┐
+│   Readmission Rate | Claims Fraud Score | Bed Occupancy | Drug Adherence   │
+└────────────────────────────────┬──────────────────────────────────────────┘
+                                 ▼
+┌────────────── AZURE SYNAPSE ANALYTICS (Dedicated SQL Pool) ───────────────┐
+└────────────────────────────────┬──────────────────────────────────────────┘
+                                 ▼
+              Power BI Dashboards  +  Logic Apps Clinical Alerts
 ```
-
-*(Note: Azure SQL Database is retained strictly for operational metadata and pipeline audit logging.)*
 
 ---
 
 ## 🗂️ Knowledge Base Structure
-
-The project repository is structured as a comprehensive knowledge base for data engineers and architects.
 
 ```text
 Hobby_Healthcare_Complex/
@@ -56,7 +66,7 @@ Hobby_Healthcare_Complex/
 ├── 04_onboarding/             New joiner guide, env setup, Azure provisioning
 ├── 05_data_governance/        PII matrix, DPDP compliance, access control
 ├── 06_source_data/            7 source folders + schema registry + sample data
-├── 07_notebooks/              11 Databricks/PySpark notebooks
+├── 07_notebooks/              13 Databricks notebooks (incl. 3 Kafka streaming)
 ├── 08_sql_scripts/            DDL, DML, stored procedures, monitoring queries
 ├── 09_adf_pipelines/          ADF pipeline JSONs, linked services, triggers
 ├── 10_alerting/               Alert architecture, Azure Monitor rules, Logic Apps
@@ -69,7 +79,17 @@ Hobby_Healthcare_Complex/
 ├── 17_meeting_notes/          Meeting records (kickoff → sprint retros)
 ├── 18_sprint_artifacts/       Sprint backlogs, product backlog, DoD
 ├── 19_power_bi/               Dashboard specs, DAX library, publish guide
-├── 20_governance_automation/  [NEW] PII/PHI scrubbing, maintenance automation
+├── 20_governance_automation/  PII/PHI scrubbing, maintenance automation
+├── 21_kafka_streaming/        [NEW v3.0] Kafka producers, Spark consumers, Avro schemas
+│   ├── producers/             ICU vitals + Claims + Pharmacy CDC producers
+│   ├── consumers/             Streaming consumer notebook references
+│   ├── config/                kafka_config.py, kafka_topics.json
+│   ├── schema_registry/       Avro schemas (.avsc)
+│   └── docker/                docker-compose.yml (local dev Kafka + ZK + UI)
+├── 22_airflow_dags/           [NEW v3.0] Declarative DAG-based pipeline orchestration
+│   ├── dags/                  7 Airflow DAGs (bronze, silver, gold, kafka, SLA)
+│   ├── plugins/               Custom operators: Databricks, ADF, Kafka sensor
+│   └── config/                connections.json, dag_config.yaml, requirements.txt
 └── MediFlow360_Interactive_Guide.html  ← INTERACTIVE PLATFORM PORTAL
 ```
 
@@ -77,10 +97,19 @@ Hobby_Healthcare_Complex/
 
 ## 🚀 Quick Start (Engineering Onboarding)
 
-1. **Access the Portal**: Open `MediFlow360_Interactive_Guide.html` in your browser. This portal serves as the single pane of glass for all architecture diagrams and deployment sequences.
-2. **Review the Medallion Implementation**: Read the Low-Level Design at `02_solution_design/LLD_Low_Level_Design.md`.
-3. **Understand Security**: Review the Zero-Trust implementation in `02_solution_design/Security_Architecture.md`.
-4. **Provision Azure Resources**: Use **Terraform** or **Bicep** templates located in `11_infrastructure/terraform/` or `11_infrastructure/bicep/`.
+1. **Access the Portal**: Open `MediFlow360_Interactive_Guide.html` in your browser.
+2. **Review the Medallion Implementation**: Read `02_solution_design/LLD_Low_Level_Design.md`.
+3. **Start Local Kafka Stack** (streaming dev):
+   ```bash
+   cd 21_kafka_streaming/docker/
+   docker-compose up -d
+   # Kafka UI: http://localhost:8080 | Schema Registry: http://localhost:8081
+   ```
+4. **Run ICU Vitals Simulation**:
+   ```bash
+   python 21_kafka_streaming/producers/kafka_vitals_producer.py --mode local --rate 5
+   ```
+5. **Provision Azure Resources**: Use Terraform at `11_infrastructure/terraform/`.
 
 ---
 
@@ -89,12 +118,35 @@ Hobby_Healthcare_Complex/
 | ID | System | Technology | Entity | Integration Pattern |
 |----|--------|------------|--------|---------------------|
 | S1 | HIS Chennai | MySQL 8.0 (on-prem) | Patients, Admissions | ADF SHIR + Watermark |
-| S2 | Insurance | REST API (OAuth2) | Claims, Approvals | ADF Pagination |
+| S2 | Insurance | REST API (OAuth2) | Claims, Approvals | **Kafka** `mrhs.insurance.claims` |
 | S3 | LIS System | SFTP (CSV) | Lab Results | Blob Event Trigger |
 | S4 | Appt. App | CosmosDB (JSON) | Appointments | Watermark Delta |
-| S5 | Pharmacy | PostgreSQL 14 | Drug Inventory | Logical CDC (WAL) |
+| S5 | Pharmacy | PostgreSQL 14 | Drug Inventory | **Kafka CDC** `mrhs.pharmacy.cdc` |
 | S6 | HR Roster | SharePoint Excel | Staff Roster | Weekly Full Load |
-| S7 | ICU Monitors | Azure IoT Hub | ICU Vitals | Tumbling Window |
+| S7 | ICU Monitors | Azure IoT Hub | ICU Vitals | **Kafka** `mrhs.icu.vitals` |
+
+---
+
+## ⚡ Real-Time Streaming (NEW — v3.0)
+
+| Kafka Topic | Producer | Consumer Notebook | Bronze Table | Watermark |
+|-------------|----------|-------------------|--------------|-----------|
+| `mrhs.icu.vitals` | `kafka_vitals_producer.py` | `08_Kafka_ICU_Vitals_Stream_NB.py` | `bronze.icu_vitals_stream` | 5 min |
+| `mrhs.insurance.claims` | `kafka_claims_producer.py` | `09_Kafka_Claims_Stream_NB.py` | `bronze.claims_stream` | 30 min |
+| `mrhs.pharmacy.cdc` | `kafka_pharmacy_cdc_producer.py` | `10_Kafka_Pharmacy_CDC_Stream_NB.py` | `bronze.pharmacy_inventory_stream` | 10 min |
+
+---
+
+## 🌀 Airflow DAG Catalog (NEW — v3.0)
+
+| DAG ID | Schedule (IST) | Description |
+|--------|----------------|-------------|
+| `bronze_batch_ingestion` | Daily 2:00 AM | S1/S3/S4/S6 batch via ADF, SLA: 3h |
+| `silver_transform` | Daily 6:00 AM | SCD2, PII masking, anomaly detection |
+| `gold_aggregation` | Daily 9:00 AM | Gold KPIs + Synapse + Power BI refresh |
+| `kafka_stream_monitor` | Every 2 min | Consumer lag check + Databricks auto-scale |
+| `data_quality_gate` | After bronze DAG | DQ validation gate before Silver promotion |
+| `sla_alerting` | Hourly | SLA breach Teams/Email notifications |
 
 ---
 
@@ -103,12 +155,12 @@ Hobby_Healthcare_Complex/
 | ID | Name | Role | Focus Area |
 |----|------|------|------------|
 | SA-001 | Vikram Krishnan | Solution Architect | Synapse, Overall Architecture |
-| DE-001 | Priya Sharma | Lead Data Engineer | Databricks, Medallion Design |
-| DE-002 | Arjun Patel | Senior DE | ADF Pipelines, SHIR |
-| DE-003 | Kavitha Rajan | Data Engineer | PySpark Transformations |
-| DA-001 | Rahul Nair | Senior Data Analyst | Power BI, Synapse DirectQuery|
-| DG-001 | Lakshmi Venkat | Governance Officer| DPDP Compliance, Masking |
+| DE-001 | Priya Sharma | Lead Data Engineer | Databricks, Medallion, Airflow DAGs |
+| DE-002 | Arjun Patel | Senior DE | ADF Pipelines, Kafka Producers |
+| DE-003 | Kavitha Rajan | Data Engineer | PySpark, Spark Structured Streaming |
+| DA-001 | Rahul Nair | Senior Data Analyst | Power BI, Synapse DirectQuery |
+| DG-001 | Lakshmi Venkat | Governance Officer | DPDP Compliance, PII Masking |
 
 ---
 
-*MediFlow360 v2.0 | MRHS Enterprise Data & Analytics Platform | Highly Confidential*
+*MediFlow360 v3.0 | MRHS Enterprise Data & Analytics Platform | Highly Confidential*

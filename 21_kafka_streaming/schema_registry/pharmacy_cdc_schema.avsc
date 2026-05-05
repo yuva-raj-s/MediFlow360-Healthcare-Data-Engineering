@@ -1,0 +1,65 @@
+{
+  "namespace": "mrhs.pharmacy.cdc",
+  "type": "record",
+  "name": "PharmacyCDCEvent",
+  "doc": "Debezium CDC envelope for pharmacy PostgreSQL WAL events — MediFlow360 Schema Registry v1.0",
+  "fields": [
+    {
+      "name": "schema",
+      "type": {
+        "type": "record",
+        "name": "SchemaInfo",
+        "fields": [
+          {"name": "type",    "type": "string"},
+          {"name": "name",    "type": "string"},
+          {"name": "version", "type": "int"}
+        ]
+      }
+    },
+    {
+      "name": "payload",
+      "type": {
+        "type": "record",
+        "name": "CDCPayload",
+        "fields": [
+          {"name": "op",     "type": {"type": "enum", "name": "CDCOperation", "symbols": ["c", "u", "d", "r"]},
+           "doc": "c=create, u=update, d=delete, r=read/snapshot"},
+          {"name": "before", "type": ["null", "string"], "default": null, "doc": "JSON string of row before change"},
+          {"name": "after",  "type": ["null", "string"], "default": null, "doc": "JSON string of row after change"},
+          {
+            "name": "source",
+            "type": {
+              "type": "record",
+              "name": "SourceInfo",
+              "fields": [
+                {"name": "version",   "type": "string"},
+                {"name": "connector", "type": "string", "default": "postgresql"},
+                {"name": "name",      "type": "string"},
+                {"name": "ts_ms",     "type": "long"},
+                {"name": "db",        "type": "string"},
+                {"name": "schema",    "type": "string"},
+                {"name": "table",     "type": "string"},
+                {"name": "txId",      "type": ["null", "string"], "default": null},
+                {"name": "lsn",       "type": ["null", "long"],   "default": null}
+              ]
+            }
+          },
+          {"name": "ts_ms", "type": "long", "doc": "Kafka event timestamp ms"},
+          {
+            "name": "transaction",
+            "type": ["null", {
+              "type": "record",
+              "name": "TransactionInfo",
+              "fields": [
+                {"name": "id",                     "type": "string"},
+                {"name": "total_order",            "type": "long"},
+                {"name": "data_collection_order",  "type": "long"}
+              ]
+            }],
+            "default": null
+          }
+        ]
+      }
+    }
+  ]
+}

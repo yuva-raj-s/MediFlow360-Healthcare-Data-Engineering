@@ -1,0 +1,101 @@
+{
+  "kafka_topics": [
+    {
+      "name": "mrhs.icu.vitals",
+      "description": "Real-time ICU vital sign readings from bedside monitors across all 4 MRHS hospitals",
+      "source_system": "S7_ICU_MONITORS",
+      "partitions": 12,
+      "replication_factor": 3,
+      "retention_ms": 604800000,
+      "retention_bytes": -1,
+      "cleanup_policy": "delete",
+      "compression_type": "gzip",
+      "max_message_bytes": 1048576,
+      "consumer_groups": [
+        "mediflow360-vitals-consumer-grp",
+        "mediflow360-dq-monitor-grp"
+      ],
+      "schema": "vitals_schema.avsc",
+      "expected_tps": 80,
+      "sla_lag_threshold": 500,
+      "bronze_delta_table": "mediflow_prod.bronze.icu_vitals_stream",
+      "watermark_delay": "5 minutes",
+      "tags": ["realtime", "icu", "clinical", "pii"]
+    },
+    {
+      "name": "mrhs.insurance.claims",
+      "description": "Insurance claim creation, approval, denial, and update events from S2 REST API",
+      "source_system": "S2_INSURANCE_API",
+      "partitions": 6,
+      "replication_factor": 3,
+      "retention_ms": 1209600000,
+      "retention_bytes": -1,
+      "cleanup_policy": "delete",
+      "compression_type": "gzip",
+      "max_message_bytes": 2097152,
+      "consumer_groups": [
+        "mediflow360-claims-consumer-grp",
+        "mediflow360-dq-monitor-grp"
+      ],
+      "schema": "claims_schema.avsc",
+      "expected_tps": 5,
+      "sla_lag_threshold": 200,
+      "bronze_delta_table": "mediflow_prod.bronze.claims_stream",
+      "watermark_delay": "30 minutes",
+      "tags": ["claims", "insurance", "revenue-cycle", "financial"]
+    },
+    {
+      "name": "mrhs.pharmacy.cdc",
+      "description": "Change Data Capture events from PostgreSQL pharmacy DB (Debezium connector on WAL)",
+      "source_system": "S5_PHARMACY_POSTGRES",
+      "partitions": 4,
+      "replication_factor": 3,
+      "retention_ms": 259200000,
+      "retention_bytes": -1,
+      "cleanup_policy": "delete",
+      "compression_type": "gzip",
+      "max_message_bytes": 1048576,
+      "consumer_groups": [
+        "mediflow360-pharmacy-cdc-grp"
+      ],
+      "schema": "pharmacy_cdc_schema.avsc",
+      "expected_tps": 2,
+      "sla_lag_threshold": 100,
+      "bronze_delta_table": "mediflow_prod.bronze.pharmacy_inventory_stream",
+      "watermark_delay": "10 minutes",
+      "tags": ["cdc", "pharmacy", "inventory", "debezium"]
+    },
+    {
+      "name": "mrhs.dlq.all",
+      "description": "Unified Dead Letter Queue for all malformed/rejected streaming events",
+      "source_system": "ALL_STREAMS",
+      "partitions": 2,
+      "replication_factor": 3,
+      "retention_ms": 2592000000,
+      "retention_bytes": -1,
+      "cleanup_policy": "delete",
+      "compression_type": "gzip",
+      "consumer_groups": [],
+      "schema": null,
+      "expected_tps": 0.5,
+      "sla_lag_threshold": 1000,
+      "bronze_delta_table": "mediflow_prod.bronze.streaming_dlq",
+      "tags": ["dlq", "error-handling", "ops"]
+    }
+  ],
+  "event_hubs_kafka_config": {
+    "namespace": "mrhs-eventhubs-prod",
+    "azure_region": "southindia",
+    "sku": "Standard",
+    "throughput_units": 10,
+    "auto_inflate": true,
+    "max_throughput_units": 20,
+    "kafka_endpoint": "mrhs-eventhubs-prod.servicebus.windows.net:9093",
+    "schema_registry": "mrhs-eventhubs-prod.servicebus.windows.net"
+  },
+  "schema_registry": {
+    "url": "https://mrhs-eventhubs-prod.servicebus.windows.net",
+    "format": "avro",
+    "compatibility": "BACKWARD"
+  }
+}

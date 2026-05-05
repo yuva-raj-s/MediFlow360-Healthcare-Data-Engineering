@@ -1,0 +1,80 @@
+# MediFlow360 — Airflow DAG Configuration
+# Used for centralized control of schedules, retries, and SLAs
+
+environment: production
+default_timezone: Asia/Kolkata
+
+dags:
+  bronze_batch_ingestion:
+    schedule: "30 20 * * *"   # 20:30 UTC = 2:00 AM IST
+    retries: 2
+    retry_delay_minutes: 10
+    sla_hours: 3
+    enabled: true
+    alerts:
+      on_failure: true
+      on_sla_miss: true
+      channels: ["teams", "email"]
+
+  silver_transform:
+    schedule: "30 0 * * *"    # 00:30 UTC = 6:00 AM IST
+    retries: 2
+    retry_delay_minutes: 15
+    sla_hours: 2
+    enabled: true
+    alerts:
+      on_failure: true
+      on_sla_miss: true
+      channels: ["teams", "email"]
+
+  gold_aggregation:
+    schedule: "30 3 * * *"    # 03:30 UTC = 9:00 AM IST
+    retries: 2
+    retry_delay_minutes: 10
+    sla_hours: 1
+    enabled: true
+    alerts:
+      on_failure: true
+      on_sla_miss: true
+      channels: ["teams", "email"]
+
+  kafka_stream_monitor:
+    schedule: "*/2 * * * *"   # Every 2 minutes
+    retries: 1
+    retry_delay_minutes: 1
+    sla_minutes: 2
+    enabled: true
+    alerts:
+      on_failure: false       # Alerting handled within tasks
+      on_sla_miss: false
+      channels: ["teams"]
+
+  data_quality_gate:
+    schedule: null            # Triggered externally
+    retries: 1
+    retry_delay_minutes: 5
+    sla_minutes: 30
+    enabled: true
+    alerts:
+      on_failure: true
+      on_sla_miss: true
+      channels: ["teams"]
+
+  sla_alerting:
+    schedule: "0 * * * *"     # Hourly
+    retries: 1
+    retry_delay_minutes: 5
+    sla_minutes: 10
+    enabled: true
+    alerts:
+      on_failure: true
+      on_sla_miss: false
+      channels: ["teams", "email"]
+
+  mediflow360_master:
+    schedule: null            # Manual trigger only
+    retries: 0
+    enabled: true
+    alerts:
+      on_failure: true
+      channels: ["teams"]

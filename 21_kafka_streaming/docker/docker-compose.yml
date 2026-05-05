@@ -1,0 +1,225 @@
+version: "3.9"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# MediFlow360 — Local Kafka Development Stack
+# Services: Zookeeper, Kafka Broker, Schema Registry, Kafka UI, Kafka Connect
+#
+# Usage:
+#   cd 21_kafka_streaming/docker/
+#   docker-compose up -d
+#   docker-compose ps                          # Check all services are healthy
+#   docker exec -it kafka kafka-topics.sh --bootstrap-server localhost:9092 --list
+#
+# Stop:
+#   docker-compose down -v                     # Removes volumes (data reset)
+#   docker-compose down                        # Preserves data
+#
+# Author: Arjun Patel (DE-002) | MediFlow360 v3.0
+# ──────────────────────────────────────────────────────────────────────────────
+
+networks:
+  mediflow-kafka-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  zookeeper_data:
+  kafka_data:
+  schema_registry_data:
+  kafka_connect_data:
+
+services:
+
+  # ── Zookeeper ──────────────────────────────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    hostname: zookeeper
+    networks:
+      - mediflow-kafka-net
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME:   2000
+      ZOOKEEPER_SYNC_LIMIT:  2
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo 'ruok' | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Kafka Broker ───────────────────────────────────────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    hostname: kafka
+    networks:
+      - mediflow-kafka-net
+    ports:
+      - "9092:9092"       # Internal (app access)
+      - "9093:9093"       # External (host access)
+      - "9101:9101"       # JMX metrics
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID:                          1
+      KAFKA_ZOOKEEPER_CONNECT:                  zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:     PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS:                          PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS:               PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME:         PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE:          "false"   # Explicit topic creation only
+      KAFKA_DEFAULT_REPLICATION_FACTOR:         1         # 1 for local dev
+      KAFKA_NUM_PARTITIONS:                     6
+      KAFKA_LOG_RETENTION_HOURS:                168       # 7 days
+      KAFKA_LOG_SEGMENT_BYTES:                  1073741824
+      KAFKA_COMPRESSION_TYPE:                   gzip
+      KAFKA_MESSAGE_MAX_BYTES:                  2097152   # 2MB max message
+      KAFKA_JMX_PORT:                           9101
+      KAFKA_JMX_HOSTNAME:                       localhost
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR:   1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR:      1
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ── Schema Registry ────────────────────────────────────────────────────────
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.0
+    container_name: schema-registry
+    hostname: schema-registry
+    networks:
+      - mediflow-kafka-net
+    ports:
+      - "8081:8081"
+    volumes:
+      - schema_registry_data:/var/lib/schema-registry
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME:                          schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS:       kafka:9092
+      SCHEMA_REGISTRY_LISTENERS:                          http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
+      SCHEMA_REGISTRY_AVRO_COMPATIBILITY_LEVEL:           BACKWARD
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/subjects"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── Kafka Connect (Debezium for Pharmacy CDC) ──────────────────────────────
+  kafka-connect:
+    image: debezium/connect:2.5
+    container_name: kafka-connect
+    hostname: kafka-connect
+    networks:
+      - mediflow-kafka-net
+    ports:
+      - "8083:8083"
+    volumes:
+      - kafka_connect_data:/kafka/connect
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    environment:
+      BOOTSTRAP_SERVERS:              kafka:9092
+      GROUP_ID:                       1
+      CONFIG_STORAGE_TOPIC:           _debezium_configs
+      OFFSET_STORAGE_TOPIC:           _debezium_offsets
+      STATUS_STORAGE_TOPIC:           _debezium_statuses
+      KEY_CONVERTER:                  org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER:                org.apache.kafka.connect.json.JsonConverter
+      CONNECT_SCHEMA_REGISTRY_URL:    http://schema-registry:8081
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+      CONNECT_REST_PORT:              8083
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/connectors"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+
+  # ── Kafka UI (Developer Console) ───────────────────────────────────────────
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    hostname: kafka-ui
+    networks:
+      - mediflow-kafka-net
+    ports:
+      - "8080:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME:                   mediflow360-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS:       kafka:9092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY:         http://schema-registry:8081
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME:    debezium
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://kafka-connect:8083
+      DYNAMIC_CONFIG_ENABLED:                  "true"
+      AUTH_TYPE:                               "DISABLED"
+
+  # ── Topic Initializer ──────────────────────────────────────────────────────
+  # Creates all MRHS topics on first boot
+  kafka-init:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-init
+    networks:
+      - mediflow-kafka-net
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      bash -c "
+        echo '⏳ Waiting for Kafka to be ready...' &&
+        sleep 10 &&
+        echo '📦 Creating MediFlow360 Kafka topics...' &&
+
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists
+          --topic mrhs.icu.vitals
+          --partitions 12
+          --replication-factor 1
+          --config retention.ms=604800000
+          --config compression.type=gzip &&
+
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists
+          --topic mrhs.insurance.claims
+          --partitions 6
+          --replication-factor 1
+          --config retention.ms=1209600000
+          --config compression.type=gzip &&
+
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists
+          --topic mrhs.pharmacy.cdc
+          --partitions 4
+          --replication-factor 1
+          --config retention.ms=259200000
+          --config compression.type=gzip &&
+
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists
+          --topic mrhs.dlq.all
+          --partitions 2
+          --replication-factor 1
+          --config retention.ms=2592000000 &&
+
+        echo '✅ All MediFlow360 topics created!' &&
+        kafka-topics --bootstrap-server kafka:9092 --list
+      "
+    restart: on-failure

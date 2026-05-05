@@ -1,0 +1,23 @@
+{
+  "namespace": "vitals_reading",
+  "type": "record",
+  "name": "VitalsReading",
+  "doc": "ICU vital sign reading from bedside monitor — MediFlow360 Schema Registry v1.2",
+  "fields": [
+    {"name": "event_type",           "type": "string",           "doc": "Event type: vitals_reading"},
+    {"name": "schema_version",       "type": "string",           "default": "1.2"},
+    {"name": "device_id",            "type": "string",           "doc": "ICU-BED-{HOSPITAL}-{BED_NO}"},
+    {"name": "patient_mrn",          "type": "string",           "doc": "Patient Medical Record Number"},
+    {"name": "hospital_code",        "type": {"type": "enum", "name": "HospitalCode", "symbols": ["CHN", "MDU", "CBE", "TRV"]}},
+    {"name": "bed_number",           "type": "int",              "doc": "ICU bed number (1–20)"},
+    {"name": "heart_rate",           "type": "int",              "doc": "BPM — normal: 60-100"},
+    {"name": "spo2",                 "type": "double",           "doc": "SpO2 % — normal: 95-100"},
+    {"name": "systolic_bp",          "type": "int",              "doc": "mmHg — normal: 90-130"},
+    {"name": "diastolic_bp",         "type": "int",              "doc": "mmHg — normal: 60-85"},
+    {"name": "temperature_c",        "type": "double",           "doc": "°C — normal: 36.1-37.2"},
+    {"name": "respiratory_rate",     "type": "int",              "doc": "breaths/min — normal: 12-20"},
+    {"name": "is_anomaly_injected",  "type": ["null","boolean"], "default": null, "doc": "Test-only: marks injected anomalies"},
+    {"name": "recorded_at",          "type": "string",           "doc": "ISO 8601 UTC timestamp from device"},
+    {"name": "ingestion_source",     "type": "string",           "default": "ICU_MONITOR"}
+  ]
+}

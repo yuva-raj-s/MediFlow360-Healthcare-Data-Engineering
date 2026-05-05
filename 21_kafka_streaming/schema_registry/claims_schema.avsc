@@ -1,0 +1,24 @@
+{
+  "namespace": "mrhs.insurance.claims",
+  "type": "record",
+  "name": "ClaimEvent",
+  "doc": "Insurance claim event from MRHS Claims REST API — MediFlow360 Schema Registry v2.0",
+  "fields": [
+    {"name": "event_type",       "type": {"type": "enum", "name": "ClaimEventType", "symbols": ["claim_created", "claim_updated", "claim_approved", "claim_denied"]}},
+    {"name": "schema_version",   "type": "string", "default": "2.0"},
+    {"name": "claim_id",         "type": "string", "doc": "Unique claim identifier"},
+    {"name": "patient_mrn",      "type": "string", "doc": "Patient Medical Record Number"},
+    {"name": "hospital_code",    "type": {"type": "enum", "name": "HospitalCode", "symbols": ["CHN", "MDU", "CBE", "TRV"]}},
+    {"name": "insurer_code",     "type": "string", "doc": "Insurance company code"},
+    {"name": "claim_amount",     "type": "double", "doc": "Total billed amount in INR"},
+    {"name": "approved_amount",  "type": ["null", "double"], "default": null, "doc": "Approved amount (null if pending)"},
+    {"name": "status",           "type": {"type": "enum", "name": "ClaimStatus", "symbols": ["PENDING", "APPROVED", "DENIED", "PARTIAL"]}},
+    {"name": "service_date",     "type": "string", "doc": "ISO date of medical service"},
+    {"name": "submitted_at",     "type": "string", "doc": "ISO 8601 UTC submission timestamp"},
+    {"name": "processed_at",     "type": ["null", "string"], "default": null},
+    {"name": "icd_codes",        "type": {"type": "array", "items": "string"}, "doc": "ICD-10 diagnosis codes"},
+    {"name": "procedure_codes",  "type": {"type": "array", "items": "string"}, "doc": "CPT procedure codes"},
+    {"name": "is_inpatient",     "type": "boolean", "default": false},
+    {"name": "ingestion_source", "type": "string", "default": "CLAIMS_API"}
+  ]
+}

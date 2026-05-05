@@ -11,9 +11,11 @@ import re
 
 RUN_ID = dbutils.widgets.get("pipeline_run_id") if "pipeline_run_id" in [w.name for w in dbutils.widgets.getAll()] else f"bronze-{datetime.now().strftime('%Y%m%d%H%M%S')}"
 SOURCE_SYSTEM = dbutils.widgets.get("source_system") if "source_system" in [w.name for w in dbutils.widgets.getAll()] else "S1_PATIENTS"
+INGESTION_MODE = dbutils.widgets.get("ingestion_mode") if "ingestion_mode" in [w.name for w in dbutils.widgets.getAll()] else "batch" # batch | streaming
+
 start_time = datetime.now(timezone.utc)
 
-print(f"[Bronze] Run ID: {RUN_ID} | Source: {SOURCE_SYSTEM}")
+print(f"[Bronze] Run ID: {RUN_ID} | Source: {SOURCE_SYSTEM} | Mode: {INGESTION_MODE}")
 
 
 # Standard metadata is now handled by Helper.add_metadata_columns()
@@ -142,6 +144,11 @@ def validate_and_land_s3_lab_sftp(file_path: str):
 # MAIN
 total_records = 0
 errors = []
+
+if INGESTION_MODE == "streaming":
+    print(f"[Bronze] Streaming mode active. Delegating to Kafka streaming notebooks.")
+    print(f"[Bronze] Note: Streaming notebooks (08, 09, 10) are orchestrated via Airflow.")
+    dbutils.notebook.exit("Delegated to streaming")
 
 try:
     if SOURCE_SYSTEM in ("S1_PATIENTS", "ALL"):

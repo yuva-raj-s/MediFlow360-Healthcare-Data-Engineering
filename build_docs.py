@@ -259,8 +259,8 @@ html_template = f"""<!DOCTYPE html>
             </h2>
             <p class="mt-6 text-lg font-mono text-slate-400 text-center max-w-3xl leading-relaxed">
                 > TARGET: Healthcare Domain <br/>
-                > PROTOCOL: Medallion Architecture (Bronze/Silver/Gold) <br/>
-                > STATUS: 7 Heterogeneous Sources Synchronized.
+                > PROTOCOL: Hybrid Medallion Architecture (Batch + Real-Time) <br/>
+                > STATUS: 7 Heterogeneous Sources Synchronized via ADF, Kafka, & Airflow.
             </p>
         </section>
 
@@ -275,54 +275,59 @@ html_template = f"""<!DOCTYPE html>
                 <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#00f0ff 1px, transparent 1px), linear-gradient(90deg, #00f0ff 1px, transparent 1px); background-size: 30px 30px;"></div>
                 
                 <svg width="100%" height="100%" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 z-0 overflow-visible">
-                    <!-- Source to ADF -->
-                    <path class="data-pipe" d="M 150 60 C 250 60, 250 300, 400 300" />
-                    <path class="data-pipe" d="M 150 138 C 250 138, 250 300, 400 300" />
-                    <path class="data-pipe" d="M 150 216 C 250 216, 250 300, 400 300" />
-                    <path class="data-pipe" d="M 150 300 L 400 300" />
-                    <path class="data-pipe" d="M 150 384 C 250 384, 250 300, 400 300" />
-                    <path class="data-pipe" d="M 150 462 C 250 462, 250 300, 400 300" />
-                    <path class="data-pipe" d="M 150 540 C 250 540, 250 300, 400 300" />
+                    <!-- BATCH FLOWS: Sources to ADF (X:400, Y:300) -->
+                    <path class="data-pipe" d="M 150 60 C 250 60, 250 300, 400 300" /> <!-- S1 -->
+                    <path class="data-pipe" d="M 150 216 C 250 216, 250 300, 400 300" /> <!-- S3 -->
+                    <path class="data-pipe" d="M 150 300 L 400 300" /> <!-- S4 -->
+                    <path class="data-pipe" d="M 150 462 C 250 462, 250 300, 400 300" /> <!-- S6 -->
 
-                    <!-- ADF to Processing -->
-                    <path class="data-pipe" d="M 400 300 L 600 150" />
-                    <path class="data-pipe" d="M 600 150 L 800 150" />
-                    <path class="data-pipe" d="M 800 150 C 700 300, 700 300, 600 300" />
-                    <path class="data-pipe" d="M 600 300 L 800 300" />
-                    <path class="data-pipe" d="M 800 300 C 700 450, 700 450, 600 450" />
-                    <path class="data-pipe" d="M 600 450 L 800 450" />
+                    <!-- STREAMING FLOWS: Sources to KAFKA (X:400, Y:450) -->
+                    <path class="data-pipe" stroke="#fb923c" d="M 150 138 C 250 138, 250 450, 400 450" /> <!-- S2 -->
+                    <path class="data-pipe" stroke="#fb923c" d="M 150 384 C 250 384, 250 450, 400 450" /> <!-- S5 -->
+                    <path class="data-pipe" stroke="#fb923c" d="M 150 540 C 250 540, 250 450, 400 450" /> <!-- S7 -->
 
-                    <!-- Serving & Presentation -->
+                    <!-- ORCHESTRATION: Airflow to ADF -->
+                    <path class="data-pipe" stroke="#34d399" stroke-dasharray="5,5" d="M 400 150 L 400 300" />
+
+                    <!-- PROCESSING LINKS -->
+                    <path class="data-pipe" d="M 400 300 L 600 150" /> <!-- ADF to UC Bronze -->
+                    <path class="data-pipe" d="M 600 150 L 800 150" /> <!-- UC Bronze to DBX Bronze -->
+                    <path class="data-pipe" d="M 400 450 C 600 450, 700 150, 800 150" /> <!-- Kafka to DBX Bronze (Real-time) -->
+                    
+                    <path class="data-pipe" d="M 800 150 L 800 300" /> <!-- Bronze to Silver -->
+                    <path class="data-pipe" d="M 800 300 L 800 450" /> <!-- Silver to Gold -->
+
+                    <!-- SERVING & PRESENTATION -->
                     <path class="data-pipe" d="M 800 450 C 950 450, 950 228, 1050 228" />
                     <path class="data-pipe" d="M 1050 228 L 1050 90" />
                     <path class="data-pipe" d="M 800 300 C 950 300, 950 372, 1050 372" />
 
-                    <!-- ALERTING PATHS (Centralized Monitoring) -->
-                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 400 300 C 500 550, 900 550, 1050 510" /> <!-- ADF to Logic App -->
-                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 150 C 900 150, 1000 500, 1050 510" /> <!-- Bronze to Logic App -->
-                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 300 C 900 300, 1000 500, 1050 510" /> <!-- Silver to Logic App -->
-                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 450 C 900 450, 1000 500, 1050 510" /> <!-- Gold to Logic App -->
+                    <!-- ALERTING PATHS -->
+                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 400 300 C 500 550, 900 550, 1050 510" />
+                    <path class="data-pipe" stroke="rgba(255,0,60,0.3)" stroke-dasharray="4" d="M 800 450 C 900 450, 1000 500, 1050 510" />
 
+                    <!-- ANIMATED FLOWS (CIRCUIT) -->
+                    <!-- Batch Flow -->
                     <path class="data-flow" d="M 150 60 C 250 60, 250 300, 400 300" />
-                    <path class="data-flow" d="M 150 138 C 250 138, 250 300, 400 300" style="animation-delay: -0.3s;" />
-                    <path class="data-flow" d="M 150 216 C 250 216, 250 300, 400 300" style="animation-delay: -0.6s;" />
-                    <path class="data-flow" d="M 150 300 L 400 300" style="animation-delay: -0.9s;" />
-                    <path class="data-flow" d="M 150 384 C 250 384, 250 300, 400 300" style="animation-delay: -1.2s;" />
-                    <path class="data-flow" d="M 150 462 C 250 462, 250 300, 400 300" style="animation-delay: -1.5s;" />
-                    <path class="data-flow" d="M 150 540 C 250 540, 250 300, 400 300" style="animation-delay: -1.8s;" />
+                    <path class="data-flow" d="M 150 216 C 250 216, 250 300, 400 300" style="animation-delay: -0.5s;" />
+                    <path class="data-flow" d="M 400 300 L 600 150" style="animation-delay: -1s;" />
+                    <path class="data-flow" d="M 600 150 L 800 150" style="animation-delay: -1.5s;" />
 
-                    <path class="data-flow" d="M 400 300 L 600 150" />
-                    <path class="data-flow" d="M 600 150 L 800 150" />
-                    <path class="data-flow" d="M 800 150 C 700 300, 700 300, 600 300" />
-                    <path class="data-flow" d="M 600 300 L 800 300" />
-                    <path class="data-flow" d="M 800 300 C 700 450, 700 450, 600 450" />
-                    <path class="data-flow" d="M 600 450 L 800 450" />
-                    <path class="data-flow" d="M 800 450 C 950 450, 950 228, 1050 228" />
-                    <path class="data-flow" d="M 1050 228 L 1050 90" />
-                    <path class="data-flow" d="M 800 300 C 950 300, 950 372, 1050 372" />
-                    <path class="data-flow-alert" d="M 400 300 C 500 550, 900 550, 1050 510" /> 
-                    <path class="data-flow-alert" d="M 800 150 C 900 150, 1000 500, 1050 510" style="animation-delay: -0.5s;" />
-                    <path class="data-flow-alert" d="M 800 300 C 900 300, 1000 500, 1050 510" style="animation-delay: -1s;" />
+                    <!-- Streaming Flow -->
+                    <path class="data-flow" stroke="#fb923c" d="M 150 138 C 250 138, 250 450, 400 450" />
+                    <path class="data-flow" stroke="#fb923c" d="M 150 540 C 250 540, 250 450, 400 450" style="animation-delay: -0.8s;" />
+                    <path class="data-flow" stroke="#fb923c" d="M 400 450 C 600 450, 700 150, 800 150" style="animation-delay: -1.2s;" />
+
+                    <!-- Core Pipeline Flow -->
+                    <path class="data-flow" d="M 800 150 L 800 300" style="animation-delay: -2s;" />
+                    <path class="data-flow" d="M 800 300 L 800 450" style="animation-delay: -2.5s;" />
+                    <path class="data-flow" d="M 800 450 C 950 450, 950 228, 1050 228" style="animation-delay: -3s;" />
+
+                    <!-- Orchestration Heartbeat -->
+                    <path class="data-flow" stroke="#34d399" d="M 400 150 L 400 300" style="animation-duration: 2s; stroke-dasharray: 4, 10;" />
+
+                    <!-- Alerts -->
+                    <path class="data-flow-alert" d="M 800 450 C 900 450, 1000 500, 1050 510" />
                 </svg>
 
                 <div class="tech-node" style="left: 12.5%; top: 10%; padding: 8px; width: 140px;" onclick="openDoc('03_data_dictionary', 'Source_to_Bronze_Mapping.md')">
@@ -354,10 +359,20 @@ html_template = f"""<!DOCTYPE html>
                     <div class="tech-node-title" style="font-size: 11px;">S7: IOT HUB</div><div class="tech-node-desc" style="font-size: 9px;">Vitals Stream</div>
                 </div>
 
+                <div class="tech-node" style="left: 33.3%; top: 25%; border-color: #10b981; z-index: 40;" onclick="openDoc('22_airflow_dags/dags', 'dag_bronze_batch_ingestion.py')">
+                    <i data-lucide="wind" class="w-8 h-8 text-emerald-400 mx-auto mb-2"></i>
+                    <div class="tech-node-title" style="color: #34d399;">APACHE AIRFLOW</div><div class="tech-node-desc">Pipeline DAGs</div>
+                </div>
+
                 <div class="radar-pulse" style="left: 33.3%; top: 50%;"></div>
                 <div class="tech-node" style="left: 33.3%; top: 50%; border-color: #8b5cf6;" onclick="openDoc('09_adf_pipelines/pipeline_configs', 'PL_Master_Orchestrator.json')">
                     <i data-lucide="git-commit" class="w-8 h-8 text-purple-400 mx-auto mb-2"></i>
                     <div class="tech-node-title" style="color: #a78bfa;">AZURE ADF</div><div class="tech-node-desc">Orchestrator Core</div>
+                </div>
+
+                <div class="tech-node" style="left: 33.3%; top: 75%; border-color: #f97316; z-index: 40;" onclick="openDoc('21_kafka_streaming', 'README.md')">
+                    <i data-lucide="fast-forward" class="w-8 h-8 text-orange-400 mx-auto mb-2"></i>
+                    <div class="tech-node-title" style="color: #fb923c;">APACHE KAFKA</div><div class="tech-node-desc">Real-Time Streams</div>
                 </div>
 
                 <div class="tech-node" style="left: 50%; top: 25%; border-color: #d97706;" onclick="openDoc('08_sql_scripts/ddl', '01_create_bronze_tables.sql')">
@@ -432,6 +447,13 @@ html_template = f"""<!DOCTYPE html>
                         <h4 class="text-xl font-bold text-red-400 mb-3 font-display">3. The War Room</h4>
                         <p class="text-slate-400 text-sm mb-6 flex-1 font-mono leading-relaxed">! CRITICAL FAILURES. Review Incident Reports for broken SCD loops, silent API changes, and missing BOMs.</p>
                         <button onclick="openDoc('15_incidents_and_struggles', 'INC-005_SCD2_Broke_Incremental.md')" class="w-full py-3 bg-red-900/40 text-red-300 rounded-lg text-sm font-mono font-bold transition-all border border-red-500/50 hover:bg-red-500/40 hover:text-white">DEBUG -> INC-005.md</button>
+                    </div>
+
+                    <div class="glass-card min-w-[340px] max-w-[340px] p-8 rounded-2xl shrink-0 snap-start flex flex-col relative overflow-hidden group border-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.1)]">
+                        <div class="w-14 h-14 bg-orange-500/20 text-orange-500 rounded-xl flex items-center justify-center mb-6 border border-orange-500/50"><i data-lucide="fast-forward" class="w-7 h-7"></i></div>
+                        <h4 class="text-xl font-bold text-orange-400 mb-3 font-display">4. Real-Time Streaming</h4>
+                        <p class="text-slate-400 text-sm mb-6 flex-1 font-mono leading-relaxed">Integrate Apache Kafka and Airflow. Transition to a hybrid medallion model supporting low-latency IoT vitals and CDC.</p>
+                        <button onclick="openDoc('21_kafka_streaming', 'README.md')" class="w-full py-3 bg-orange-900/40 text-orange-300 rounded-lg text-sm font-mono font-bold transition-all border border-orange-500/50 hover:bg-orange-500/40 hover:text-white">EXECUTE -> STREAMING.md</button>
                     </div>
                 </div>
             </div>
@@ -551,13 +573,14 @@ html_template = f"""<!DOCTYPE html>
                             <div class="text-cyan-400 font-mono text-sm font-bold uppercase tracking-widest">PHASE 05 // INGESTION</div>
                             <span class="text-[10px] font-mono text-slate-500">[0x7F4B05]</span>
                         </div>
-                        <h4 class="text-2xl font-display font-bold text-white mb-4">Ingestion Orchestration</h4>
-                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">ADF pipeline deployment with dynamic metadata mapping.</p>
+                        <h4 class="text-2xl font-display font-bold text-white mb-4">Hybrid Ingestion & Orchestration</h4>
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">ADF & Airflow pipeline deployment with Kafka streaming integration.</p>
                         
                         <div class="init-log">
-                            <div class="log-line"><span class="status-tag">[JSON]</span> pipeline.deploy(MasterOrchestrator)</div>
-                            <div class="log-line"><span class="status-tag">[LOOP]</span> ForEach(source in source_list)</div>
-                            <div class="log-line"><span class="status-tag">[DONE]</span> active ingestion loops initialized.</div>
+                            <div class="log-line"><span class="status-tag">[KAFKA]</span> streams.start(vitals, claims, pharmacy)</div>
+                            <div class="log-line"><span class="status-tag">[AIRFLOW]</span> dags.unpause(mediflow360_master)</div>
+                            <div class="log-line"><span class="status-tag">[ADF]</span> webhook.trigger(airflow_dags)</div>
+                            <div class="log-line"><span class="status-tag">[DONE]</span> hybrid ingestion matrix initialized.</div>
                         </div>
 
                         <button onclick="openDoc('09_adf_pipelines/pipeline_configs', 'PL_Master_Orchestrator.json')" class="mt-6 text-xs font-mono text-cyan-400 hover:text-white border-b border-cyan-400 flex items-center gap-2 w-fit"><i data-lucide="git-merge" class="w-3 h-3"></i> REVIEW PIPELINES</button>

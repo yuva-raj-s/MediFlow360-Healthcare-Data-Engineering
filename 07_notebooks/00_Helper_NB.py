@@ -1,7 +1,7 @@
 # Databricks Notebook: 00_Helper_NB.py
 # MediFlow360 — Shared Utilities, Alert Dispatcher, Audit Logger
 # Author: Kavitha Rajan (DE-003) | Reviewed: Priya Sharma (DE-001)
-# Version: 2.1 | Last Updated: 2024-03-10
+# Version: 3.0 | Last Updated: 2024-04-10 (Added Kafka + Airflow support)
 # Usage: %run ./00_Helper_NB from any other notebook
 
 # ============================================================
@@ -37,13 +37,42 @@ WATERMARK_TABLE   = "watermark_control"
 SERVING_JDBC_URL  = "jdbc:sqlserver://mrhs-sqldb-prod.database.windows.net:1433;database=MediFlow360"
 SYNAPSE_JDBC_URL  = "jdbc:sqlserver://mrhs-synw-prod.sql.azuresynapse.net:1433;database=mrhs-sqlpool-gold"
 
-TEAMS_WEBHOOK_KEY = "teams-webhook-mediflow360-alerts"
+TEAMS_WEBHOOK_KEY   = "teams-webhook-mediflow360-alerts"
 EMAIL_LOGIC_APP_KEY = "logic-app-email-url"
 
 # Alert severity levels
 SEVERITY_INFO     = "INFO"
 SEVERITY_WARNING  = "WARNING"
 SEVERITY_CRITICAL = "CRITICAL"
+
+# ============================================================
+# KAFKA / AZURE EVENT HUBS CONSTANTS  (v3.0)
+# ============================================================
+# Azure Event Hubs Namespace (Kafka-compatible endpoint)
+EVENT_HUB_NAMESPACE   = "mrhs-eventhubs-prod"
+KAFKA_BOOTSTRAP       = f"{EVENT_HUB_NAMESPACE}.servicebus.windows.net:9093"
+EVENT_HUB_CONN_KEY    = "event-hub-connection-string"   # Key Vault secret key
+
+# Kafka Topic Names (single source of truth)
+TOPIC_ICU_VITALS      = "mrhs.icu.vitals"
+TOPIC_CLAIMS          = "mrhs.insurance.claims"
+TOPIC_PHARMACY_CDC    = "mrhs.pharmacy.cdc"
+
+# Streaming checkpoint base path (ADLS Gen2)
+STREAMING_CHECKPOINT_BASE = f"{ABFSS_PATH}/streaming/checkpoints"
+
+# Consumer lag SLA thresholds
+KAFKA_LAG_THRESHOLDS = {
+    TOPIC_ICU_VITALS:   500,
+    TOPIC_CLAIMS:       200,
+    TOPIC_PHARMACY_CDC: 100,
+}
+
+# ============================================================
+# AIRFLOW INTEGRATION CONSTANTS  (v3.0)
+# ============================================================
+AIRFLOW_CALLBACK_URL_KEY = "airflow-callback-webhook-url"   # Key Vault secret
+AIRFLOW_DAG_BASE_URL     = "https://mrhs-airflow.astronomer.run/mrhs-prod/dags"
 
 
 # ============================================================
@@ -353,6 +382,88 @@ def mask_phone(df, col_name: str = "phone_number"):
 
 
 # ============================================================
+# SECTION 8: KAFKA CONFIGURATION HELPERS  (v3.0)
+# ============================================================
+
+def get_kafka_config(topic: str, consumer_group: str, starting_offsets: str = "latest") -> dict:
+    """
+    Return Spark readStream options for the given Kafka topic.
+    Automatically uses SASL_SSL for Azure Event Hubs endpoint.
+    """
+    try:
+        conn_string = get_secret(EVENT_HUB_CONN_KEY)
+    except Exception:
+        # Local dev fallback: use localhost:9092 PLAINTEXT
+        print("[Helper] ⚠️  Event Hub secret not found. Using local Kafka (localhost:9092).")
+        return {
+            "kafka.bootstrap.servers": "localhost:9092",
+            "subscribe":               topic,
+            "startingOffsets":         starting_offsets,
+            "failOnDataLoss":          "false",
+            "kafka.group.id":          consumer_group,
+        }
+
+    jaas = (
+        f"kafkashaded.org.apache.kafka.common.security.plain.PlainLoginModule required "
+        f'username="$ConnectionString" '
+        f'password="{conn_string}";'
+    )
+    return {
+        "kafka.bootstrap.servers":   KAFKA_BOOTSTRAP,
+        "kafka.security.protocol":   "SASL_SSL",
+        "kafka.sasl.mechanism":      "PLAIN",
+        "kafka.sasl.jaas.config":    jaas,
+        "subscribe":                 topic,
+        "startingOffsets":           starting_offsets,
+        "failOnDataLoss":            "false",
+        "maxOffsetsPerTrigger":      "5000",
+        "kafka.group.id":            consumer_group,
+    }
+
+
+def get_streaming_checkpoint_path(stream_name: str) -> str:
+    """Return the ADLS checkpoint path for a streaming query."""
+    return f"{STREAMING_CHECKPOINT_BASE}/{stream_name}"
+
+
+# ============================================================
+# SECTION 9: STREAMING AUDIT LOG  (v3.0)
+# ============================================================
+
+def write_streaming_audit_log(
+    stream_name: str,
+    notebook_name: str,
+    batch_id: int,
+    run_id: str,
+    records_read: int,
+    records_written: int,
+    records_rejected: int,
+    status: str,
+    start_time,
+    end_time,
+    error_message: str = None,
+):
+    """
+    Write a streaming micro-batch audit record.
+    Reuses write_audit_log() with a structured streaming-specific pipeline name.
+    """
+    write_audit_log(
+        pipeline_name    = f"PL_Kafka_{stream_name}",
+        notebook_name    = notebook_name,
+        run_id           = f"{run_id}-batch{batch_id}",
+        source_system    = f"KAFKA_{stream_name.upper()}",
+        entity_name      = stream_name,
+        records_read     = records_read,
+        records_written  = records_written,
+        records_rejected = records_rejected,
+        status           = status,
+        start_time       = start_time,
+        end_time         = end_time,
+        error_message    = error_message,
+    )
+
+
+# ============================================================
 # SECTION 7: SPARK SESSION SETUP
 # ============================================================
 
@@ -369,8 +480,8 @@ def get_spark():
 # ============================================================
 
 print("=" * 60)
-print("  MediFlow360 | 00_Helper_NB | v2.1")
-print("=" * 60)
+print("  MediFlow360 | 00_Helper_NB | v3.0 (+ Kafka + Airflow)")
+print("="* 60)
 
 spark = get_spark()
 print(f"✅ Spark version: {spark.version}")
